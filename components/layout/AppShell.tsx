@@ -76,7 +76,7 @@ export default function AppShell({ children }: Props) {
         </motion.div>
 
         {/* Screen */}
-        <div className="absolute inset-x-0 top-16 bottom-0 overflow-hidden px-8 pb-8">
+        <div className="absolute inset-x-0 top-16 bottom-0 overflow-hidden px-8 pb-4">
           {children}
         </div>
       </motion.div>
