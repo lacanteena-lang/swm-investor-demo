@@ -21,9 +21,8 @@ export default function BottomNavigation({
   setActiveTab,
 }: Props) {
   return (
-    <div className="relative z-40 px-4 pb-4 pt-2">
-
-      <div
+<div className="relative z-40 px-4 pb-2 pt-2">
+    <div
         className="
           rounded-full
           border
