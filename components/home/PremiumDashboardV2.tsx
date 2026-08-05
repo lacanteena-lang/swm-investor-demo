@@ -70,7 +70,7 @@ export default function PremiumDashboardV2() {
 
       {/* Logo */}
 
-      <div className="mt-6 flex flex-1 items-start">
+      <div className="mt-4 flex flex-1 items-start">
 
         <div className="w-full rounded-[30px] border border-cyan-400/20 bg-[#08111F]/90 px-6 py-4 backdrop-blur-2xl">
 
