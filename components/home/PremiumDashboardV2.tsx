@@ -29,7 +29,7 @@ export default function PremiumDashboardV2() {
 
       {/* Heading */}
 
-      <div className="mt-5">
+      <div className="mt-3">
 
         <p className="text-[11px] uppercase tracking-[0.30em] text-cyan-400">
           PERSONAL SAFETY
@@ -48,7 +48,7 @@ export default function PremiumDashboardV2() {
 
       {/* Status */}
 
-      <div className="mt-5 space-y-2">
+      <div className="mt-4 space-y-2">
 
         <div className="flex items-center gap-3 rounded-full border border-emerald-400/20 bg-white/5 px-5 py-3">
           <div className="h-3 w-3 rounded-full bg-emerald-400" />
@@ -72,7 +72,7 @@ export default function PremiumDashboardV2() {
 
       <div className="mt-4 flex flex-1 items-start">
 
-        <div className="w-full rounded-[30px] border border-cyan-400/20 bg-[#08111F]/90 px-6 py-4 backdrop-blur-2xl">
+        <div className="w-full rounded-[30px] border border-cyan-400/20 bg-[#08111F]/90 px-6 py-3 backdrop-blur-2xl">
 
           <Image
             src="/images/swm-logo.png"
