@@ -3,6 +3,8 @@
 import { ReactNode } from "react";
 import { motion } from "framer-motion";
 
+import DeviceFrame from "./DeviceFrame";
+
 type Props = {
   children: ReactNode;
 };
@@ -10,8 +12,11 @@ type Props = {
 export default function AppShell({ children }: Props) {
   return (
     <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#030712]">
+
       {/* Animated Background */}
+
       <div className="absolute inset-0 overflow-hidden">
+
         <motion.div
           animate={{
             x: [0, 80, -40, 0],
@@ -39,20 +44,19 @@ export default function AppShell({ children }: Props) {
           }}
           className="absolute -right-56 -bottom-56 h-[650px] w-[650px] rounded-full bg-blue-600/20 blur-[190px]"
         />
+
       </div>
 
-      {/* Phone Frame */}
-      <motion.div
-        initial={{ opacity: 0, scale: 0.97 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.45 }}
-        className="relative h-[100dvh] max-h-[844px] w-full max-w-[430px] overflow-hidden rounded-[48px] border border-white/10 bg-[#09111F]/90 shadow-[0_40px_120px_rgba(0,0,0,0.70)] backdrop-blur-3xl"
-      >
+      <DeviceFrame>
+
         {/* Border Glow */}
+
         <div className="absolute inset-0 rounded-[48px] ring-1 ring-cyan-400/10 pointer-events-none" />
 
         {/* Status Bar */}
+
         <div className="absolute left-0 right-0 top-0 z-40 flex items-center justify-between px-8 pt-5 text-xs text-white/70">
+
           <span>9:41</span>
 
           <div className="flex gap-1">
@@ -60,9 +64,11 @@ export default function AppShell({ children }: Props) {
             <div className="h-2 w-2 rounded-full bg-white/70" />
             <div className="h-2 w-2 rounded-full bg-white/40" />
           </div>
+
         </div>
 
         {/* Dynamic Island */}
+
         <motion.div
           animate={{ width: [128, 138, 128] }}
           transition={{ duration: 4, repeat: Infinity }}
@@ -76,10 +82,13 @@ export default function AppShell({ children }: Props) {
         </motion.div>
 
         {/* Screen */}
+
         <div className="absolute inset-x-0 top-16 bottom-0 overflow-hidden px-8 pb-8">
           {children}
         </div>
-      </motion.div>
+
+      </DeviceFrame>
+
     </main>
   );
 }
