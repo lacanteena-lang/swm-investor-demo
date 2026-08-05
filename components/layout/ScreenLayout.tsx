@@ -16,22 +16,22 @@ export default function ScreenLayout({
   setActiveTab,
 }: Props) {
   return (
-    <div className="flex h-full flex-col">
+    <div className="relative h-full">
 
-      {/* Scrollable Screen */}
+      {/* Screen Content */}
 
-      <div className="flex-1 overflow-hidden">
-    {children}
-</div>
-        
-      
+      <div className="h-full overflow-hidden pb-24">
+        {children}
+      </div>
 
-      {/* Bottom Navigation */}
+      {/* Fixed Bottom Navigation */}
 
-      <BottomNavigation
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
-      />
+      <div className="absolute inset-x-0 bottom-0">
+        <BottomNavigation
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+        />
+      </div>
 
     </div>
   );
