@@ -39,7 +39,7 @@ export default function PremiumDashboardV2() {
           You're Protected
         </h1>
 
-        <p className="mt-3 max-w-[310px] text-[14px] leading-6 text-white/70 md:text-[15px] md:leading-7">
+        <p className="mt-2 max-w-[310px] text-[14px] leading-6 text-white/70 md:text-[15px] md:leading-7">
           AI-powered protection backed by your Personal Safety Concierge,
           ready whenever you need assistance.
         </p>
@@ -48,7 +48,7 @@ export default function PremiumDashboardV2() {
 
       {/* Status */}
 
-      <div className="mt-4 space-y-2">
+      <div className="mt-3 space-y-2">
 
         <div className="flex items-center gap-3 rounded-full border border-emerald-400/20 bg-white/5 px-5 py-3">
           <div className="h-3 w-3 rounded-full bg-emerald-400" />
@@ -58,7 +58,7 @@ export default function PremiumDashboardV2() {
           </span>
         </div>
 
-        <div className="inline-flex items-center gap-3 rounded-full border border-cyan-400/20 bg-white/5 px-5 py-3">
+        <div className="inline-flex items-center gap-3 rounded-full border border-cyan-400/20 bg-white/5 px-5 py-2.5">
           <div className="h-3 w-3 rounded-full bg-cyan-400" />
 
           <span className="text-[14px] font-semibold text-white">
@@ -70,7 +70,7 @@ export default function PremiumDashboardV2() {
 
       {/* Logo */}
 
-      <div className="mt-4 flex flex-1 items-start">
+      <div className="mt-3">
 
         <div className="w-full rounded-[30px] border border-cyan-400/20 bg-[#08111F]/90 px-6 py-3 backdrop-blur-2xl">
 
