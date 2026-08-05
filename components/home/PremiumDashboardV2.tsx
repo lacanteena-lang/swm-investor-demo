@@ -29,7 +29,7 @@ export default function PremiumDashboardV2() {
 
       {/* Heading */}
 
-      <div className="mt-3">
+      <div className="mt-2">
 
         <p className="text-[11px] uppercase tracking-[0.30em] text-cyan-400">
           PERSONAL SAFETY
