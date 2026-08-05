@@ -18,9 +18,9 @@ export default function ScreenLayout({
   return (
     <div className="flex h-full flex-col">
 
-      {/* Screen Content */}
+      {/* Scrollable Screen */}
 
-      <div className="flex-1 overflow-hidden">
+      <div className="flex-1 overflow-y-auto overflow-x-hidden no-scrollbar">
         {children}
       </div>
 

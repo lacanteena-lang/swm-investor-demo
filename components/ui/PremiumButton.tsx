@@ -1,67 +1,67 @@
 "use client";
 
-import { motion } from "framer-motion";
 import { ReactNode } from "react";
 
-type PremiumButtonProps = {
+interface PrimaryButtonProps {
   children: ReactNode;
   onClick?: () => void;
   className?: string;
-};
+  disabled?: boolean;
+}
 
-export default function PremiumButton({
+export default function PrimaryButton({
   children,
   onClick,
   className = "",
-}: PremiumButtonProps) {
+  disabled = false,
+}: PrimaryButtonProps) {
   return (
-    <motion.button
-      whileHover={{
-        scale: 1.02,
-      }}
-      whileTap={{
-        scale: 0.98,
-      }}
+    <button
       onClick={onClick}
+      disabled={disabled}
       className={`
         relative
         w-full
         overflow-hidden
         rounded-2xl
-        bg-cyan-400
-        py-4
+        bg-gradient-to-r
+        from-[#ff3b3b]
+        to-[#ff5b5b]
         px-6
+        py-4
+        text-sm
         font-semibold
-        text-slate-950
-        shadow-[0_0_35px_rgba(34,211,238,0.35)]
+        tracking-wide
+        text-white
         transition-all
         duration-300
+        shadow-[0_0_25px_rgba(255,59,59,0.45)]
+        hover:scale-[1.02]
+        hover:shadow-[0_0_40px_rgba(255,59,59,0.65)]
+        active:scale-[0.98]
+        disabled:opacity-50
+        disabled:cursor-not-allowed
         ${className}
       `}
     >
-      {/* Glow */}
-
-      <motion.div
-        animate={{
-          x: ["-120%", "120%"],
-        }}
-        transition={{
-          duration: 3,
-          repeat: Infinity,
-          ease: "linear",
-        }}
+      {/* Shine Effect */}
+      <span
         className="
+          pointer-events-none
           absolute
-          inset-y-0
-          w-20
-          bg-white/20
-          blur-xl
+          inset-0
+          bg-gradient-to-r
+          from-transparent
+          via-white/20
+          to-transparent
+          opacity-40
         "
       />
 
-      <span className="relative z-10">
+      {/* Button Content */}
+      <span className="relative z-10 flex items-center justify-center gap-2">
         {children}
       </span>
-    </motion.button>
+    </button>
   );
 }
