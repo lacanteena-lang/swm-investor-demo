@@ -21,7 +21,7 @@ export default function BottomNavigation({
   setActiveTab,
 }: Props) {
   return (
-  <div className="relative z-40 px-5 pt-0 pb-[10px]">
+    <div className="absolute left-0 right-0 -bottom-8 z-40 px-5">
 
       <div
         className="
@@ -86,7 +86,6 @@ export default function BottomNavigation({
                     "
                   />
                 )}
-
               </motion.button>
             );
           })}
