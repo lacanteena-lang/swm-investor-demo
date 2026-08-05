@@ -21,7 +21,7 @@ export default function BottomNavigation({
   setActiveTab,
 }: Props) {
   return (
-    <div className="relative z-40 px-5 pt-1 pb-1">
+    <div className="relative z-40 px-5 pt-0 pb-0">
 
       <div
         className="
@@ -32,7 +32,7 @@ export default function BottomNavigation({
           backdrop-blur-3xl
           shadow-[0_20px_60px_rgba(0,0,0,0.45)]
           px-2
-          py-2
+          py-1
         "
       >
         <div className="grid grid-cols-5 place-items-center">
@@ -44,14 +44,14 @@ export default function BottomNavigation({
               <motion.button
                 key={id}
                 onClick={() => setActiveTab(id)}
-                whileTap={{ scale: 0.92 }}
+                whileTap={{ scale: 0.94 }}
                 animate={active ? { scale: 1.05 } : { scale: 1 }}
                 transition={{ duration: 0.2 }}
                 className={`
                   relative
                   flex
-                  h-12
-                  w-12
+                  h-11
+                  w-11
                   items-center
                   justify-center
                   rounded-full
@@ -59,13 +59,13 @@ export default function BottomNavigation({
                   duration-300
                   ${
                     active
-                      ? "bg-[#FF3B30]/20 shadow-[0_0_25px_rgba(255,59,48,0.40)]"
+                      ? "bg-[#FF3B30]/20 shadow-[0_0_20px_rgba(255,59,48,0.35)]"
                       : "hover:bg-white/5"
                   }
                 `}
               >
                 <Icon
-                  size={24}
+                  size={22}
                   className={
                     active
                       ? "text-[#FF3B30]"
