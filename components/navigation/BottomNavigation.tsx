@@ -21,81 +21,79 @@ export default function BottomNavigation({
   setActiveTab,
 }: Props) {
   return (
-    <div
-      className="
-        relative
-        z-40
-        border-t
-        border-white/10
-        bg-black/40
-        backdrop-blur-3xl
-        px-4
-        pb-[max(env(safe-area-inset-bottom),16px)]
-        pt-3
-      "
-    >
-      <div className="mx-auto flex max-w-[430px] items-center justify-between">
+    <div className="relative z-40 px-4 pb-4 pt-2">
 
-        {items.map(({ id, icon: Icon }) => {
-          const active = activeTab === id;
+      <div
+        className="
+          rounded-full
+          border
+          border-white/10
+          bg-black/70
+          backdrop-blur-3xl
+          shadow-[0_20px_60px_rgba(0,0,0,0.45)]
+          px-3
+          py-3
+        "
+      >
+        <div className="grid grid-cols-5 place-items-center">
 
-          return (
-            <motion.button
-              key={id}
-              onClick={() => setActiveTab(id)}
-              whileTap={{ scale: 0.92 }}
-              animate={active ? { scale: 1.08 } : { scale: 1 }}
-              transition={{ duration: 0.2 }}
-              className="
-                relative
-                flex
-                h-14
-                w-14
-                items-center
-                justify-center
-                rounded-full
-              "
-            >
-              {active && (
-                <motion.div
-                  layoutId="active-pill"
-                  className="
-                    absolute
-                    inset-0
-                    rounded-full
-                    bg-[#FF3B30]/20
-                    shadow-[0_0_24px_rgba(255,59,48,0.45)]
-                  "
+          {items.map(({ id, icon: Icon }) => {
+            const active = activeTab === id;
+
+            return (
+              <motion.button
+                key={id}
+                onClick={() => setActiveTab(id)}
+                whileTap={{ scale: 0.92 }}
+                animate={active ? { scale: 1.08 } : { scale: 1 }}
+                transition={{ duration: 0.2 }}
+                className={`
+                  relative
+                  flex
+                  h-14
+                  w-14
+                  items-center
+                  justify-center
+                  rounded-full
+                  transition-all
+                  duration-300
+                  ${
+                    active
+                      ? "bg-[#FF3B30]/20 shadow-[0_0_30px_rgba(255,59,48,0.45)]"
+                      : "hover:bg-white/5"
+                  }
+                `}
+              >
+                <Icon
+                  size={26}
+                  className={
+                    active
+                      ? "text-[#FF3B30]"
+                      : "text-white/70"
+                  }
                 />
-              )}
 
-              <Icon
-                size={25}
-                className={
-                  active
-                    ? "relative z-10 text-[#FF3B30]"
-                    : "relative z-10 text-white/65"
-                }
-              />
+                {active && (
+                  <motion.div
+                    layoutId="nav-dot"
+                    className="
+                      absolute
+                      -bottom-1
+                      h-2
+                      w-2
+                      rounded-full
+                      bg-[#FF3B30]
+                    "
+                  />
+                )}
 
-              {active && (
-                <motion.div
-                  layoutId="active-dot"
-                  className="
-                    absolute
-                    -bottom-1
-                    h-2
-                    w-2
-                    rounded-full
-                    bg-[#FF3B30]
-                  "
-                />
-              )}
-            </motion.button>
-          );
-        })}
+              </motion.button>
+            );
+          })}
 
+        </div>
       </div>
+
     </div>
   );
 }
