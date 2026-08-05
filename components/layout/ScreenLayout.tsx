@@ -20,9 +20,11 @@ export default function ScreenLayout({
 
       {/* Scrollable Screen */}
 
-      <div className="flex-1 overflow-y-auto overflow-x-hidden no-scrollbar">
-        {children}
-      </div>
+      <div className="flex-1 overflow-hidden">
+    {children}
+</div>
+        
+      
 
       {/* Bottom Navigation */}
 

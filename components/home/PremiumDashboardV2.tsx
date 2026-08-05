@@ -8,7 +8,7 @@ import { Bell } from "lucide-react";
 
 export default function PremiumDashboardV2() {
   return (
-    <div className="h-full overflow-y-auto no-scrollbar bg-[#050B17] px-6 pt-4 pb-36">
+    <div className="h-full overflow-hidden no-scrollbar bg-[#050B17] px-6 pt-4 pb-36">
       <div className="relative flex items-center">
         <div className="absolute left-1/2 -translate-x-1/2">
           <div className="flex items-center gap-2 rounded-full border border-white/10 bg-black/70 px-5 py-2">
