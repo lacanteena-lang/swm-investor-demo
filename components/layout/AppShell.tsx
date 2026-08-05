@@ -71,7 +71,10 @@ export default function AppShell({ children }: Props) {
 
         <motion.div
           animate={{ width: [128, 138, 128] }}
-          transition={{ duration: 4, repeat: Infinity }}
+          transition={{
+            duration: 4,
+            repeat: Infinity,
+          }}
           className="absolute left-1/2 top-3 z-50 flex h-9 -translate-x-1/2 items-center justify-center rounded-full bg-black px-5"
         >
           <div className="mr-2 h-2 w-2 rounded-full bg-emerald-400" />
@@ -81,9 +84,9 @@ export default function AppShell({ children }: Props) {
           </span>
         </motion.div>
 
-        {/* Screen */}
+        {/* Screen Content */}
 
-        <div className="absolute inset-x-0 top-16 bottom-0 overflow-hidden px-8 pb-8">
+        <div className="absolute inset-x-0 top-16 bottom-0 overflow-y-auto no-scrollbar px-8 pb-8">
           {children}
         </div>
 
