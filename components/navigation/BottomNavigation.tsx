@@ -21,7 +21,7 @@ export default function BottomNavigation({
   setActiveTab,
 }: Props) {
   return (
-  <div className="relative z-40 px-5 pt-0 pb-[6px]">
+  <div className="relative z-40 px-5 pt-0 pb-[10px]">
 
       <div
         className="
