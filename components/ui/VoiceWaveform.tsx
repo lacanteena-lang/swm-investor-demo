@@ -2,62 +2,46 @@
 
 import { motion } from "framer-motion";
 
-const bars = [18, 32, 22, 42, 28, 48, 26, 36, 20, 40, 24, 34];
+const bars = [
+  18, 32, 22, 42, 28, 48,
+  26, 36, 20, 40, 24, 34,
+];
 
 export default function VoiceWaveform() {
   return (
-    <div className="flex flex-col items-center">
+    <div className="flex h-[72px] items-center justify-center">
 
-      {/* Waveform */}
-
-      <div className="flex h-14 items-end gap-1">
-
-        {bars.map((height, index) => (
-          <motion.div
-            key={index}
-            animate={{
-              height: [
-                height,
-                height + 16,
-                Math.max(10, height - 8),
-                height,
-              ],
-            }}
-            transition={{
-              duration: 1 + index * 0.05,
-              repeat: Infinity,
-              repeatType: "mirror",
-              ease: "easeInOut",
-            }}
-            className="w-[5px] rounded-full bg-cyan-300"
-            style={{
+      {bars.map((height, index) => (
+        <motion.div
+          key={index}
+          animate={{
+            height: [
               height,
-            }}
-          />
-        ))}
-
-      </div>
-
-      {/* Status */}
-
-      <motion.p
-        animate={{
-          opacity: [0.5, 1, 0.5],
-        }}
-        transition={{
-          duration: 2,
-          repeat: Infinity,
-        }}
-        className="mt-5 text-sm uppercase tracking-[0.30em] text-cyan-300"
-      >
-        Listening...
-      </motion.p>
-
-      <p className="mt-2 text-center text-sm text-white/55">
-        Speak naturally.
-        <br />
-        Your AI Concierge is listening.
-      </p>
+              height + 18,
+              Math.max(10, height - 10),
+              height + 8,
+              height,
+            ],
+            opacity: [0.7, 1, 0.8, 1, 0.7],
+          }}
+          transition={{
+            duration: 0.7 + index * 0.04,
+            repeat: Infinity,
+            ease: "easeInOut",
+            delay: index * 0.04,
+          }}
+          className="
+            mx-[2px]
+            w-[5px]
+            rounded-full
+            bg-red-500
+            shadow-[0_0_7px_rgba(255,0,0,0.95),0_0_16px_rgba(255,0,0,0.65)]
+          "
+          style={{
+            height,
+          }}
+        />
+      ))}
 
     </div>
   );

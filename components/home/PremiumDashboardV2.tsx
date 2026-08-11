@@ -1,91 +1,368 @@
 "use client";
 
-import Image from "next/image";
-import { Bell } from "lucide-react";
+import { useState } from "react";
+import {
+  Bell,
+  CheckCircle2,
+  Bot,
+  Shield,
+  Navigation,
+  X,
+} from "lucide-react";
 
-export default function PremiumDashboardV2() {
+import HeroCard from "./HeroCard";
+import JourneyCard from "./JourneyCard";
+import StatusCards from "./StatusCards";
+
+type Props = {
+  setActiveTab: (tab: string) => void;
+};
+
+export default function PremiumDashboardV2({
+  setActiveTab,
+}: Props) {
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
+
+  const openNotifications = () => {
+    console.log("SWM NOTIFICATION BELL CLICKED");
+    setNotificationsOpen(true);
+  };
+
+  const closeNotifications = () => {
+    console.log("SWM NOTIFICATIONS CLOSED");
+    setNotificationsOpen(false);
+  };
+
   return (
-    <div className="flex h-full flex-col bg-[#050B17] px-5 pt-3">
+    <div className="relative flex h-full min-h-0 flex-col overflow-hidden">
+
+      {/* Background Glow */}
+
+      <div className="pointer-events-none absolute inset-0">
+
+        <div className="absolute left-1/2 top-[-170px] h-[380px] w-[380px] -translate-x-1/2 rounded-full bg-cyan-500/10 blur-[110px]" />
+
+        <div className="absolute bottom-[-140px] left-1/2 h-[300px] w-[300px] -translate-x-1/2 rounded-full bg-blue-500/10 blur-[110px]" />
+
+      </div>
+
 
       {/* Header */}
 
-      <div className="relative flex items-center">
+      <div className="relative z-[60] flex shrink-0 items-center justify-between px-6 pt-1 pb-2">
 
-        <div className="absolute left-1/2 -translate-x-1/2">
-          <div className="flex items-center gap-2 rounded-full border border-white/10 bg-black/70 px-4 py-2">
-            <div className="h-2.5 w-2.5 rounded-full bg-emerald-400" />
+        <div className="flex items-center gap-2">
 
-            <span className="text-sm font-semibold text-white">
-              Online
-            </span>
-          </div>
+          <div className="h-2 w-2 animate-pulse rounded-full bg-emerald-400" />
+
+          <span className="text-[11px] font-semibold uppercase tracking-[0.32em] text-white/90">
+            Concierge Online
+          </span>
+
         </div>
 
-        <button className="ml-auto flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/5">
-          <Bell size={18} className="text-white" />
+
+        {/* NOTIFICATION BELL */}
+
+        <button
+          type="button"
+          aria-label="Open notifications"
+          data-testid="notification-bell"
+          onClick={openNotifications}
+          className="
+            relative
+            z-[70]
+            flex
+            h-10
+            w-10
+            shrink-0
+            cursor-pointer
+            items-center
+            justify-center
+            rounded-full
+            border
+            border-white/10
+            bg-white/5
+            text-white
+            backdrop-blur-xl
+            transition-all
+            duration-200
+            hover:bg-white/10
+            active:scale-95
+          "
+        >
+          <Bell
+            size={17}
+            strokeWidth={2}
+            className="pointer-events-none text-white"
+          />
         </button>
 
       </div>
 
-      {/* Heading */}
 
-      <div className="mt-2">
+      {/* MAIN DASHBOARD */}
 
-        <p className="text-[11px] uppercase tracking-[0.30em] text-cyan-400">
-          PERSONAL SAFETY
-        </p>
+      <div
+        className="
+          relative
+          z-10
+          flex
+          min-h-0
+          flex-1
+          flex-col
+          gap-2
+          overflow-hidden
+          px-5
+          pb-2
+        "
+      >
 
-        <h1 className="mt-2 text-[30px] font-bold leading-tight text-white md:text-[34px]">
-          You're Protected
-        </h1>
+        {/* HERO */}
 
-        <p className="mt-2 max-w-[310px] text-[14px] leading-6 text-white/70 md:text-[15px] md:leading-7">
-          AI-powered protection backed by your Personal Safety Concierge,
-          ready whenever you need assistance.
-        </p>
+        <div className="relative z-10 shrink-0 h-[265px]">
+
+          <HeroCard />
+
+        </div>
+
+
+        {/* JOURNEY */}
+
+        <div className="relative z-10 min-h-0 flex-1 overflow-hidden">
+
+          <JourneyCard setActiveTab={setActiveTab} />
+
+        </div>
+
+
+        {/* TODAY'S STATUS */}
+
+        <div className="relative z-10 shrink-0 h-[105px]">
+
+          <StatusCards />
+
+        </div>
 
       </div>
 
-      {/* Status */}
 
-      <div className="mt-3 space-y-2">
+      {/* ================================================= */}
+      {/* NOTIFICATION CENTER */}
+      {/* ================================================= */}
 
-        <div className="flex items-center gap-3 rounded-full border border-emerald-400/20 bg-white/5 px-5 py-3">
-          <div className="h-3 w-3 rounded-full bg-emerald-400" />
+      {notificationsOpen && (
 
-          <span className="text-[14px] font-semibold text-white">
-            Concierge Online
-          </span>
-        </div>
+        <div className="absolute inset-0 z-[200]">
 
-        <div className="inline-flex items-center gap-3 rounded-full border border-cyan-400/20 bg-white/5 px-5 py-2.5">
-          <div className="h-3 w-3 rounded-full bg-cyan-400" />
+          {/* BACKDROP */}
 
-          <span className="text-[14px] font-semibold text-white">
-            AI Ready
-          </span>
-        </div>
-
-      </div>
-
-      {/* Logo */}
-
-      <div className="mt-3">
-
-        <div className="w-full rounded-[30px] border border-cyan-400/20 bg-[#08111F]/90 px-6 py-3 backdrop-blur-2xl">
-
-          <Image
-            src="/images/swm-logo.png"
-            alt="SWM"
-            width={130}
-            height={130}
-            priority
-            className="mx-auto object-contain md:h-[150px] md:w-[150px]"
+          <button
+            type="button"
+            aria-label="Close notifications"
+            onClick={closeNotifications}
+            className="
+              absolute
+              inset-0
+              z-[200]
+              cursor-pointer
+              bg-black/55
+              backdrop-blur-sm
+            "
           />
 
+
+          {/* NOTIFICATION PANEL */}
+
+          <div
+            className="
+              absolute
+              left-4
+              right-4
+              top-16
+              z-[210]
+              overflow-hidden
+              rounded-3xl
+              border
+              border-white/10
+              bg-[#0B1729]/95
+              shadow-[0_20px_60px_rgba(0,0,0,0.45)]
+              backdrop-blur-2xl
+            "
+          >
+
+            {/* HEADER */}
+
+            <div className="flex items-center justify-between border-b border-white/10 px-5 py-4">
+
+              <div>
+
+                <p className="text-[9px] font-semibold uppercase tracking-[0.28em] text-cyan-300">
+                  SAFETY CENTER
+                </p>
+
+                <h3 className="mt-1 text-lg font-bold text-white">
+                  Notifications
+                </h3>
+
+              </div>
+
+
+              {/* CLOSE X */}
+
+              <button
+                type="button"
+                aria-label="Close notifications"
+                onClick={closeNotifications}
+                className="
+                  relative
+                  z-[220]
+                  flex
+                  h-9
+                  w-9
+                  cursor-pointer
+                  items-center
+                  justify-center
+                  rounded-full
+                  bg-white/5
+                  text-white/70
+                  transition
+                  hover:bg-white/10
+                  hover:text-white
+                  active:scale-95
+                "
+              >
+                <X
+                  size={17}
+                  className="pointer-events-none"
+                />
+              </button>
+
+            </div>
+
+
+            {/* NOTIFICATION ITEMS */}
+
+            <div className="space-y-3 p-4">
+
+              {/* Protection */}
+
+              <div className="flex items-center gap-3 rounded-2xl bg-white/5 p-4">
+
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-400/10">
+
+                  <CheckCircle2
+                    size={19}
+                    className="text-emerald-300"
+                  />
+
+                </div>
+
+                <div className="min-w-0">
+
+                  <p className="text-sm font-semibold text-white">
+                    Protection Active
+                  </p>
+
+                  <p className="mt-1 text-[11px] leading-5 text-white/50">
+                    Your Personal Safety Concierge is online.
+                  </p>
+
+                </div>
+
+              </div>
+
+
+              {/* AI */}
+
+              <div className="flex items-center gap-3 rounded-2xl bg-white/5 p-4">
+
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-cyan-400/10">
+
+                  <Bot
+                    size={19}
+                    className="text-cyan-300"
+                  />
+
+                </div>
+
+                <div className="min-w-0">
+
+                  <p className="text-sm font-semibold text-white">
+                    AI Concierge Ready
+                  </p>
+
+                  <p className="mt-1 text-[11px] leading-5 text-white/50">
+                    AI assistance is available whenever you need it.
+                  </p>
+
+                </div>
+
+              </div>
+
+
+              {/* Journey */}
+
+              <div className="flex items-center gap-3 rounded-2xl bg-white/5 p-4">
+
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-400/10">
+
+                  <Navigation
+                    size={19}
+                    className="text-blue-300"
+                  />
+
+                </div>
+
+                <div className="min-w-0">
+
+                  <p className="text-sm font-semibold text-white">
+                    Journey Monitoring
+                  </p>
+
+                  <p className="mt-1 text-[11px] leading-5 text-white/50">
+                    Start a protected journey whenever you're ready.
+                  </p>
+
+                </div>
+
+              </div>
+
+
+              {/* Safety */}
+
+              <div className="flex items-center gap-3 rounded-2xl bg-white/5 p-4">
+
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-400/10">
+
+                  <Shield
+                    size={19}
+                    className="text-emerald-300"
+                  />
+
+                </div>
+
+                <div className="min-w-0">
+
+                  <p className="text-sm font-semibold text-white">
+                    Safety Systems Ready
+                  </p>
+
+                  <p className="mt-1 text-[11px] leading-5 text-white/50">
+                    Emergency response systems are standing by.
+                  </p>
+
+                </div>
+
+              </div>
+
+            </div>
+
+          </div>
+
         </div>
 
-      </div>
+      )}
 
     </div>
   );

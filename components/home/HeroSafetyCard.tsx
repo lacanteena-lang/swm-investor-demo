@@ -9,34 +9,46 @@ import HeroStats from "./HeroStats";
 
 export default function HeroSafetyCard() {
   return (
-    <GlassCard className="p-7">
+    <GlassCard className="px-6 py-6">
+
+      {/* Header */}
 
       <SectionHeader
         eyebrow="GOOD AFTERNOON"
         title="You're Protected"
-        subtitle="AI-powered protection backed by your Personal Safety Concierge, ready whenever you need assistance."
+        subtitle="AI-powered protection backed by your Personal Safety Concierge. You're never alone."
       />
 
-      {/* Status */}
+      {/* Status Badges */}
 
-      <div className="mt-6">
-        <StatusBadge label="Personal Safety Concierge Online" />
-      </div>
+      <div className="mt-6 flex flex-wrap gap-3">
 
-      <div className="mt-4">
         <StatusBadge
-          label="AI Concierge Ready"
+          label="Personal Safety Concierge Online"
+        />
+
+        <StatusBadge
+          label="AI Ready"
           color="cyan"
         />
+
       </div>
 
-      {/* SWM Logo */}
+      {/* Logo */}
 
-      <LogoPanel />
+      <div className="mt-8">
 
-      {/* Journey + Emergency */}
+        <LogoPanel />
 
-      <HeroStats />
+      </div>
+
+      {/* Journey Stats */}
+
+      <div className="mt-8">
+
+        <HeroStats />
+
+      </div>
 
     </GlassCard>
   );

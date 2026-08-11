@@ -13,22 +13,15 @@ import JourneyCard from "./JourneyCard";
 import EnterpriseCard from "./EnterpriseCard";
 import QuickActions from "./QuickActions";
 
-export default function PremiumHome() {
+type Props = {
+  setActiveTab: (tab: string) => void;
+};
+
+export default function PremiumHome({ setActiveTab }: Props) {
   const [expanded, setExpanded] = useState(false);
 
   return (
-    <div
-      className="
-        flex
-        h-full
-        flex-col
-        overflow-y-auto
-        no-scrollbar
-        px-5
-        pt-6
-        pb-36
-      "
-    >
+    <div className="relative h-full overflow-hidden">
       <OnlineHeader />
 
       <StatusPills />
@@ -44,18 +37,15 @@ export default function PremiumHome() {
 
       {expanded && (
         <div className="mt-8 space-y-6">
-
           <AIConciergeCard />
 
-          <JourneyCard />
+          <JourneyCard setActiveTab={setActiveTab} />
 
           <EnterpriseCard />
 
           <QuickActions />
-
         </div>
       )}
-
     </div>
   );
 }

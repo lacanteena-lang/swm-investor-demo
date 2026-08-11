@@ -14,7 +14,6 @@ export default function NavigationStack({
 }: Props) {
   return (
     <AnimatePresence mode="wait">
-
       <motion.div
         key={screenKey}
         initial={{
@@ -37,7 +36,6 @@ export default function NavigationStack({
       >
         {children}
       </motion.div>
-
     </AnimatePresence>
   );
 }

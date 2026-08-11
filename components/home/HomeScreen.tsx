@@ -18,7 +18,9 @@ export default function HomeScreen({
       activeTab={activeTab}
       setActiveTab={setActiveTab}
     >
-      <PremiumDashboardV2 />
+      <PremiumDashboardV2
+        setActiveTab={setActiveTab}
+      />
     </ScreenLayout>
   );
 }

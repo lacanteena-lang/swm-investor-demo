@@ -4,8 +4,6 @@ import { motion } from "framer-motion";
 
 import ScreenLayout from "../layout/ScreenLayout";
 
-import SectionHeader from "../ui/SectionHeader";
-
 import JourneyMap from "./JourneyMap";
 import LiveJourneyMetrics from "./LiveJourneyMetrics";
 import JourneyStatus from "./JourneyStatus";
@@ -27,51 +25,64 @@ export default function JourneyHome({
       setActiveTab={setActiveTab}
     >
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
+        initial={{ opacity: 0, y: 18 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.45 }}
-        className="relative flex h-full flex-col overflow-y-auto no-scrollbar px-5 pt-6 pb-36"
+        className="relative h-full overflow-y-auto no-scrollbar"
       >
+
         {/* Background Glow */}
 
-        <div className="absolute -top-24 left-1/2 h-[420px] w-[420px] -translate-x-1/2 rounded-full bg-cyan-400/10 blur-[160px]" />
+        <div className="pointer-events-none fixed inset-0">
 
-        {/* Header */}
+          <div className="absolute left-1/2 top-[-180px] h-[420px] w-[420px] -translate-x-1/2 rounded-full bg-cyan-400/10 blur-[150px]" />
 
-        <SectionHeader
-          eyebrow="PROTECTED JOURNEY"
-          title="Live Journey Monitoring"
-          subtitle="AI continuously monitors your journey while your Personal Safety Concierge stays connected until you arrive safely."
-        />
+          <div className="absolute bottom-[-150px] left-1/2 h-[320px] w-[320px] -translate-x-1/2 rounded-full bg-blue-500/10 blur-[120px]" />
 
-        {/* Live Route */}
+        </div>
 
-        <div className="mt-8">
+
+        {/* Scrollable Journey Content */}
+
+        <div className="relative px-5 pt-4 pb-44">
+
+          {/* Journey Map */}
+
           <JourneyMap />
-        </div>
 
-        {/* Live Metrics */}
 
-        <div className="mt-8">
-          <LiveJourneyMetrics />
-        </div>
+          {/* Live AI Analysis */}
 
-        {/* Journey Status */}
+          <div className="mt-5">
+            <LiveJourneyMetrics />
+          </div>
 
-        <div className="mt-8">
-          <JourneyStatus />
-        </div>
 
-        {/* Timeline */}
+          {/* Journey Status */}
 
-        <div className="mt-8">
-          <JourneyTimeline />
-        </div>
+          <div className="mt-5">
+            <JourneyStatus />
+          </div>
 
-        {/* Statistics */}
 
-        <div className="mt-8">
-          <JourneyStats />
+          {/* Journey Timeline */}
+
+          <div className="mt-5">
+            <JourneyTimeline />
+          </div>
+
+
+          {/* Journey Stats */}
+
+          <div className="mt-5">
+            <JourneyStats />
+          </div>
+
+
+          {/* Bottom Safe Space */}
+
+          <div className="h-8" />
+
         </div>
 
       </motion.div>

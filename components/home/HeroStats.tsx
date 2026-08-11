@@ -1,5 +1,6 @@
 "use client";
 
+import { motion } from "framer-motion";
 import {
   MapPinned,
   ShieldCheck,
@@ -7,101 +8,109 @@ import {
 
 export default function HeroStats() {
   return (
-    <div className="mt-6 grid grid-cols-2 gap-4">
+    <div className="mt-8 grid grid-cols-2 gap-5">
 
-      {/* Journey */}
+      {/* Protected Journey */}
 
-      <div
+      <motion.div
+        whileHover={{ y: -3 }}
+        transition={{ duration: 0.2 }}
         className="
-          rounded-[28px]
+          rounded-[30px]
           border
-          border-white/10
+          border-cyan-400/10
           bg-white/5
-          p-5
-          backdrop-blur-xl
+          p-6
+          backdrop-blur-2xl
         "
       >
-        <div className="flex justify-center">
+        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-cyan-500/10">
 
-          <div
-            className="
-              flex
-              h-14
-              w-14
-              items-center
-              justify-center
-              rounded-full
-              bg-cyan-500/10
-            "
-          >
-            <MapPinned
-              size={28}
-              className="text-cyan-300"
-            />
-          </div>
+          <MapPinned
+            size={30}
+            className="text-cyan-300"
+          />
 
         </div>
 
-        <p className="mt-5 text-center text-xs font-semibold uppercase tracking-[0.25em] text-cyan-300">
-          Journey
+        <p className="mt-5 text-center text-[11px] font-semibold uppercase tracking-[0.28em] text-cyan-300">
+          Protected Journey
         </p>
 
-        <p className="mt-2 text-center text-3xl font-bold text-white">
-          Standby
+        <h3 className="mt-3 text-center text-xl font-bold text-white">
+          Ready
+        </h3>
+
+        <p className="mt-2 text-center text-sm text-white/60">
+          Start protected travel anytime.
         </p>
 
         <div className="mt-5 flex justify-center">
-          <div className="h-3 w-3 rounded-full bg-emerald-400" />
-        </div>
 
-      </div>
+          <div className="flex items-center gap-2 rounded-full bg-emerald-500/10 px-3 py-1">
 
-      {/* Emergency */}
+            <div className="h-2 w-2 rounded-full bg-emerald-400" />
 
-      <div
-        className="
-          rounded-[28px]
-          border
-          border-white/10
-          bg-white/5
-          p-5
-          backdrop-blur-xl
-        "
-      >
-        <div className="flex justify-center">
+            <span className="text-xs font-medium text-emerald-300">
+              Available
+            </span>
 
-          <div
-            className="
-              flex
-              h-14
-              w-14
-              items-center
-              justify-center
-              rounded-full
-              bg-cyan-500/10
-            "
-          >
-            <ShieldCheck
-              size={28}
-              className="text-cyan-300"
-            />
           </div>
 
         </div>
 
-        <p className="mt-5 text-center text-xs font-semibold uppercase tracking-[0.25em] text-cyan-300">
-          Emergency
+      </motion.div>
+
+      {/* Emergency SOS */}
+
+      <motion.div
+        whileHover={{ y: -3 }}
+        transition={{ duration: 0.2 }}
+        className="
+          rounded-[30px]
+          border
+          border-red-400/10
+          bg-white/5
+          p-6
+          backdrop-blur-2xl
+        "
+      >
+        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-red-500/10">
+
+          <ShieldCheck
+            size={30}
+            className="text-red-300"
+          />
+
+        </div>
+
+        <p className="mt-5 text-center text-[11px] font-semibold uppercase tracking-[0.28em] text-red-300">
+          Emergency SOS
         </p>
 
-        <p className="mt-2 text-center text-3xl font-bold text-white">
+        <h3 className="mt-3 text-center text-xl font-bold text-white">
           Ready 24/7
+        </h3>
+
+        <p className="mt-2 text-center text-sm text-white/60">
+          Instant AI and Concierge response.
         </p>
 
         <div className="mt-5 flex justify-center">
-          <div className="h-3 w-3 rounded-full bg-emerald-400" />
+
+          <div className="flex items-center gap-2 rounded-full bg-emerald-500/10 px-3 py-1">
+
+            <div className="h-2 w-2 rounded-full bg-emerald-400" />
+
+            <span className="text-xs font-medium text-emerald-300">
+              Available
+            </span>
+
+          </div>
+
         </div>
 
-      </div>
+      </motion.div>
 
     </div>
   );

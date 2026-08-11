@@ -19,7 +19,7 @@ export default function SectionHeader({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.35 }}
     >
-      <p className="text-[11px] uppercase tracking-[0.35em] text-cyan-300/70">
+      <p className="text-[10px] font-semibold uppercase tracking-[0.30em] text-cyan-300">
         {eyebrow}
       </p>
 
@@ -28,7 +28,7 @@ export default function SectionHeader({
       </h2>
 
       {subtitle && (
-        <p className="mt-3 max-w-[320px] text-[15px] leading-7 text-white/65">
+        <p className="mt-3 max-w-[320px] text-[15px] font-semibold leading-7 text-red-400">
           {subtitle}
         </p>
       )}

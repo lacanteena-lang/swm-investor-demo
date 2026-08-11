@@ -1,258 +1,119 @@
 "use client";
 
-import { motion } from "framer-motion";
 import {
-  Home,
-  Briefcase,
-  Navigation,
-  ShieldCheck,
   Clock3,
-  Route,
+  ShieldCheck,
+  Bot,
 } from "lucide-react";
 
 import GlassCard from "../ui/GlassCard";
-import StatusBadge from "../ui/StatusBadge";
+import PremiumMap from "./PremiumMap";
 
 export default function JourneyMap() {
   return (
-    <GlassCard className="p-6">
-
+    <GlassCard className="w-full">
       {/* Header */}
 
-      <div className="flex items-center justify-between">
+      <div className="w-full text-center">
+        <p className="text-[10px] font-semibold uppercase tracking-[0.32em] text-cyan-300">
+          LIVE JOURNEY
+        </p>
 
-        <div>
-
-          <p className="text-xs uppercase tracking-[0.30em] text-cyan-300/70">
-            LIVE JOURNEY
-          </p>
-
-          <h2 className="mt-2 text-2xl font-bold text-white">
-            Protected Route
-          </h2>
-
-        </div>
-
-        <StatusBadge
-          label="AI Monitoring"
-          color="green"
-        />
-
+        <h2 className="mt-2 text-[28px] font-bold leading-tight text-white">
+          Protected
+          <br />
+          Route
+        </h2>
       </div>
 
-      {/* Route */}
+      {/* AI Monitoring */}
 
-      <div className="relative mt-12 px-4">
+      <div className="mt-6 flex justify-center">
+        <div className="inline-flex items-center gap-2 rounded-full border border-cyan-300/20 bg-cyan-300/10 px-5 py-2.5 backdrop-blur-xl">
+          <span className="h-2.5 w-2.5 animate-pulse rounded-full bg-cyan-300 shadow-[0_0_12px_rgba(103,232,249,0.9)]" />
 
-        {/* Background Line */}
-
-        <div className="absolute left-10 right-10 top-7 h-[3px] rounded-full bg-white/10" />
-
-        {/* Animated Progress */}
-
-        <motion.div
-          animate={{
-            width: ["5%", "25%", "45%", "65%", "85%"],
-          }}
-          transition={{
-            duration: 10,
-            repeat: Infinity,
-            repeatType: "reverse",
-            ease: "easeInOut",
-          }}
-          className="
-            absolute
-            left-10
-            top-7
-            h-[3px]
-            rounded-full
-            bg-cyan-300
-          "
-        />
-
-        <div className="relative flex items-center justify-between">
-
-          {/* Home */}
-
-          <div className="flex flex-col items-center">
-
-            <div
-              className="
-                flex
-                h-14
-                w-14
-                items-center
-                justify-center
-                rounded-full
-                bg-white/5
-              "
-            >
-
-              <Home
-                size={24}
-                className="text-cyan-300"
-              />
-
-            </div>
-
-            <p className="mt-3 text-sm text-white">
-              Home
-            </p>
-
-          </div>
-
-          {/* Moving Navigation */}
-          <motion.div
-            animate={{
-              x: [-45, 45, 120, 190, 250],
-            }}
-            transition={{
-              duration: 10,
-              repeat: Infinity,
-              repeatType: "reverse",
-              ease: "easeInOut",
-            }}
-            className="absolute left-10 top-1"
-          >
-            <div className="rounded-full bg-cyan-400 p-3 shadow-[0_0_25px_rgba(34,211,238,0.45)]">
-
-              <Navigation
-                size={18}
-                className="text-slate-950"
-              />
-
-            </div>
-          </motion.div>
-
-          {/* Office */}
-
-          <div className="flex flex-col items-center">
-
-            <div
-              className="
-                flex
-                h-14
-                w-14
-                items-center
-                justify-center
-                rounded-full
-                bg-white/5
-              "
-            >
-
-              <Briefcase
-                size={24}
-                className="text-cyan-300"
-              />
-
-            </div>
-
-            <p className="mt-3 text-sm text-white">
-              Office
-            </p>
-
-          </div>
-
+          <span className="text-[10px] font-semibold uppercase tracking-[0.22em] text-cyan-200">
+            AI MONITORING
+          </span>
         </div>
-
       </div>
 
-      {/* Live Journey Details */}
+      {/* Premium Map */}
 
-      <div className="mt-10 grid grid-cols-2 gap-4">
+      <div className="relative mt-6 h-[500px] overflow-hidden rounded-3xl border border-cyan-400/10">
+        <PremiumMap />
+      </div>
 
-        <div className="rounded-2xl bg-white/5 p-4">
+      {/* Journey Status Cards */}
 
-          <Route
-            size={22}
-            className="text-cyan-300"
-          />
+      <div className="mt-6 grid grid-cols-3 gap-3">
 
-          <p className="mt-3 text-xs uppercase tracking-[0.20em] text-white/45">
-            Progress
-          </p>
+        {/* ETA */}
 
-          <motion.p
-            animate={{
-              opacity: [0.7, 1, 0.7],
-            }}
-            transition={{
-              duration: 2,
-              repeat: Infinity,
-            }}
-            className="mt-2 text-xl font-bold text-white"
-          >
-            68%
-          </motion.p>
-
-        </div>
-
-        <div className="rounded-2xl bg-white/5 p-4">
-
+        <div className="rounded-2xl border border-white/10 bg-white/5 p-4 backdrop-blur-xl">
           <Clock3
-            size={22}
+            size={20}
             className="text-cyan-300"
           />
 
-          <p className="mt-3 text-xs uppercase tracking-[0.20em] text-white/45">
+          <p className="mt-3 text-[10px] font-semibold uppercase tracking-[0.14em] text-white/55">
             ETA
           </p>
 
-          <motion.p
-            animate={{
-              opacity: [0.7, 1, 0.7],
-            }}
-            transition={{
-              duration: 2,
-              repeat: Infinity,
-            }}
-            className="mt-2 text-xl font-bold text-white"
-          >
+          <h3 className="mt-1 text-lg font-bold text-white">
             18 min
-          </motion.p>
+          </h3>
 
+          <p className="mt-1 text-[9px] text-white/45">
+            To Office
+          </p>
         </div>
 
-      </div>
-      {/* Live Status */}
+        {/* AI STATUS */}
 
-      <div className="mt-8 rounded-2xl bg-white/5 p-5">
+        <div className="rounded-2xl border border-white/10 bg-white/5 p-4 backdrop-blur-xl">
+          <Bot
+            size={20}
+            className="text-cyan-300"
+          />
 
-        <div className="flex items-center justify-between">
+          <p className="mt-3 text-[10px] font-semibold uppercase tracking-[0.14em] text-white/55">
+            AI STATUS
+          </p>
 
-          <span className="text-white/60">
-            AI Monitoring
-          </span>
-
-          <span className="text-emerald-300">
+          <h3 className="mt-1 flex items-center gap-1.5 text-lg font-bold text-emerald-300">
+            <span className="h-2 w-2 animate-pulse rounded-full bg-emerald-300" />
             Active
-          </span>
+          </h3>
 
+          <p className="mt-1 text-[9px] text-white/45">
+            Monitoring
+          </p>
         </div>
 
-        <div className="mt-4 flex items-center justify-between">
+        {/* CONCIERGE */}
 
-          <span className="text-white/60">
-            Personal Safety Concierge
-          </span>
+        <div className="rounded-2xl border border-white/10 bg-white/5 p-4 backdrop-blur-xl">
+          <ShieldCheck
+            size={20}
+            className="text-cyan-300"
+          />
 
-          <div className="flex items-center gap-2">
+          <p className="mt-3 text-[10px] font-semibold uppercase tracking-[0.14em] text-white/55">
+            CONCIERGE
+          </p>
 
-            <ShieldCheck
-              size={18}
-              className="text-emerald-300"
-            />
+          <h3 className="mt-1 flex items-center gap-1.5 text-lg font-bold text-emerald-300">
+            <span className="h-2 w-2 animate-pulse rounded-full bg-emerald-300" />
+            Online
+          </h3>
 
-            <span className="text-emerald-300">
-              Connected
-            </span>
-
-          </div>
-
+          <p className="mt-1 text-[9px] text-white/45">
+            We're with you
+          </p>
         </div>
 
       </div>
-
     </GlassCard>
   );
 }

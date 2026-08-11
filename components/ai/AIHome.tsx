@@ -26,45 +26,171 @@ export default function AIHome({
       setActiveTab={setActiveTab}
     >
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
+        initial={{ opacity: 0, y: 14 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.45 }}
-        className="relative flex h-full flex-col overflow-y-auto no-scrollbar px-5 pt-6 pb-36"
+        className="
+          relative
+          flex
+          h-full
+          flex-col
+          overflow-y-auto
+          no-scrollbar
+          px-5
+          pt-5
+          pb-36
+        "
       >
-        {/* Ambient Background */}
 
-        <div className="absolute -top-20 left-1/2 h-96 w-96 -translate-x-1/2 rounded-full bg-cyan-400/10 blur-[140px]" />
+        {/* =====================================================
+            PREMIUM AMBIENT BACKGROUND
+        ===================================================== */}
 
-        {/* Header */}
+        <div className="pointer-events-none absolute inset-0 overflow-hidden">
 
-        <SectionHeader
-          eyebrow="AI CONCIERGE"
-          title="How can I help today?"
-          subtitle="AI assistance backed by your Personal Safety Concierge, always available when you need support."
-        />
+          {/* Top cyan glow */}
+          <div
+            className="
+              absolute
+              left-1/2
+              top-[-160px]
+              h-[360px]
+              w-[360px]
+              -translate-x-1/2
+              rounded-full
+              bg-cyan-400/10
+              blur-[120px]
+            "
+          />
 
-        {/* AI Orb */}
+          {/* Concierge centre glow */}
+          <div
+            className="
+              absolute
+              left-1/2
+              top-[250px]
+              h-[260px]
+              w-[260px]
+              -translate-x-1/2
+              rounded-full
+              bg-blue-500/[0.08]
+              blur-[110px]
+            "
+          />
 
-        <div className="mt-10 flex justify-center">
-          <AIOrb />
+          {/* Bottom atmosphere */}
+          <div
+            className="
+              absolute
+              bottom-[-180px]
+              left-1/2
+              h-[360px]
+              w-[360px]
+              -translate-x-1/2
+              rounded-full
+              bg-cyan-400/[0.06]
+              blur-[120px]
+            "
+          />
+
         </div>
 
-        {/* Voice */}
 
-        <div className="mt-8">
-          <VoicePanel />
-        </div>
+        {/* =====================================================
+            CONTENT
+        ===================================================== */}
 
-        {/* Conversation */}
+        <div className="relative z-10">
 
-        <div className="mt-8">
-          <AIConversation />
-        </div>
+          {/* HEADER */}
 
-        {/* Concierge */}
+          <div className="mt-1">
 
-        <div className="mt-8">
-          <ConciergeStatus />
+            <SectionHeader
+              eyebrow="AI CONCIERGE"
+              title="How can I help today?"
+              subtitle="AI assistance backed by your Personal Safety Concierge."
+            />
+
+          </div>
+
+
+          {/* AI ORB */}
+
+          <div className="mt-5 flex justify-center">
+
+            <div
+              className="
+                relative
+                flex
+                items-center
+                justify-center
+              "
+            >
+
+              {/* Soft outer glow */}
+
+              <div
+                className="
+                  pointer-events-none
+                  absolute
+                  h-[210px]
+                  w-[210px]
+                  rounded-full
+                  bg-cyan-400/[0.08]
+                  blur-[55px]
+                "
+              />
+
+              {/* Secondary ring */}
+
+              <div
+                className="
+                  pointer-events-none
+                  absolute
+                  h-[170px]
+                  w-[170px]
+                  rounded-full
+                  border
+                  border-cyan-300/[0.08]
+                "
+              />
+
+              <AIOrb />
+
+            </div>
+
+          </div>
+
+
+          {/* VOICE CONCIERGE */}
+
+          <div className="mt-8">
+
+            <VoicePanel />
+
+          </div>
+
+
+          {/* CONVERSATION */}
+
+          <div className="mt-7">
+
+            <AIConversation
+              setActiveTab={setActiveTab}
+            />
+
+          </div>
+
+
+          {/* CONCIERGE STATUS */}
+
+          <div className="mt-7 pb-5">
+
+            <ConciergeStatus />
+
+          </div>
+
         </div>
 
       </motion.div>

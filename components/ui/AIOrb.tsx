@@ -9,8 +9,8 @@ type AIOrbProps = {
 };
 
 export default function AIOrb({
-  size = 176,
-  iconSize = 72,
+  size = 148,
+  iconSize = 56,
 }: AIOrbProps) {
   return (
     <div
@@ -20,43 +20,43 @@ export default function AIOrb({
         height: size,
       }}
     >
-      {/* Outer Glow */}
+      {/* Ambient Glow */}
 
       <motion.div
         animate={{
-          scale: [1, 1.08, 1],
-          opacity: [0.45, 0.9, 0.45],
+          scale: [1, 1.12, 1],
+          opacity: [0.30, 0.75, 0.30],
+        }}
+        transition={{
+          duration: 4,
+          repeat: Infinity,
+          ease: "easeInOut",
+        }}
+        className="absolute inset-[-18px] rounded-full bg-cyan-400/15 blur-[65px]"
+      />
+
+      {/* Inner Glow */}
+
+      <motion.div
+        animate={{
+          scale: [0.95, 1.05, 0.95],
         }}
         transition={{
           duration: 3,
           repeat: Infinity,
           ease: "easeInOut",
         }}
-        className="absolute inset-0 rounded-full bg-cyan-400/15 blur-[55px]"
+        className="absolute inset-3 rounded-full bg-cyan-400/10 blur-3xl"
       />
 
-      {/* Middle Glow */}
-
-      <motion.div
-        animate={{
-          scale: [0.92, 1.02, 0.92],
-        }}
-        transition={{
-          duration: 2.4,
-          repeat: Infinity,
-          ease: "easeInOut",
-        }}
-        className="absolute inset-5 rounded-full bg-cyan-400/10 blur-3xl"
-      />
-
-      {/* Orb */}
+      {/* Main Orb */}
 
       <motion.div
         animate={{
           rotate: 360,
         }}
         transition={{
-          duration: 22,
+          duration: 30,
           repeat: Infinity,
           ease: "linear",
         }}
@@ -69,23 +69,40 @@ export default function AIOrb({
           justify-center
           rounded-full
           border
-          border-cyan-400/20
+          border-cyan-400/15
           bg-gradient-to-br
-          from-cyan-400/20
-          via-sky-500/10
-          to-blue-600/10
+          from-[#163453]
+          via-[#0E2036]
+          to-[#08131F]
           backdrop-blur-3xl
-          shadow-[0_0_70px_rgba(34,211,238,0.25)]
+          shadow-[0_0_80px_rgba(34,211,238,0.25)]
         "
       >
+
+        {/* Core */}
+
+        <div
+          className="
+            absolute
+            inset-6
+            rounded-full
+            border
+            border-white/5
+            bg-gradient-to-br
+            from-cyan-400/10
+            to-transparent
+          "
+        />
+
+        {/* AI Icon */}
+
         <motion.div
           animate={{
             scale: [1, 1.08, 1],
           }}
           transition={{
-            duration: 2,
+            duration: 2.5,
             repeat: Infinity,
-            ease: "easeInOut",
           }}
         >
           <Bot
@@ -93,6 +110,7 @@ export default function AIOrb({
             className="text-cyan-300"
           />
         </motion.div>
+
       </motion.div>
 
       {/* Orbit Ring */}
@@ -102,13 +120,13 @@ export default function AIOrb({
           rotate: -360,
         }}
         transition={{
-          duration: 40,
+          duration: 45,
           repeat: Infinity,
           ease: "linear",
         }}
         className="
           absolute
-          inset-[-10px]
+          inset-[-8px]
           rounded-full
           border
           border-cyan-400/10
@@ -122,13 +140,25 @@ export default function AIOrb({
           rotate: 360,
         }}
         transition={{
-          duration: 8,
+          duration: 10,
           repeat: Infinity,
           ease: "linear",
         }}
-        className="absolute inset-[-16px]"
+        className="absolute inset-[-10px]"
       >
-        <div className="absolute left-1/2 top-0 h-3 w-3 -translate-x-1/2 rounded-full bg-cyan-300 shadow-[0_0_20px_rgba(34,211,238,0.8)]" />
+        <div
+          className="
+            absolute
+            left-1/2
+            top-0
+            h-3
+            w-3
+            -translate-x-1/2
+            rounded-full
+            bg-cyan-300
+            shadow-[0_0_25px_rgba(34,211,238,0.9)]
+          "
+        />
       </motion.div>
     </div>
   );

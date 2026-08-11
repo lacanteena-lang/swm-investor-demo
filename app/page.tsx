@@ -12,15 +12,15 @@ import AIHome from "../components/ai/AIHome";
 import JourneyHome from "../components/journey/JourneyHome";
 import SOSHome from "../components/sos/SOSHome";
 import ProfileHome from "../components/profile/ProfileHome";
+import EmergencyContacts from "../components/sos/EmergencyContacts";
 
 export default function Page() {
   const [activeTab, setActiveTab] = useState("home");
 
   return (
-    <NavigationProvider navigate={setActiveTab}>
+    <NavigationProvider>
       <AppShell>
-        <NavigationStack screenKey={activeTab}>
-
+        <NavigationStack>
           {activeTab === "home" && (
             <HomeScreen
               activeTab={activeTab}
@@ -56,11 +56,16 @@ export default function Page() {
             />
           )}
 
+          {activeTab === "emergency-contacts" && (
+            <EmergencyContacts />
+          )}
+
           {activeTab !== "home" &&
             activeTab !== "ai" &&
             activeTab !== "journey" &&
             activeTab !== "sos" &&
-            activeTab !== "profile" && (
+            activeTab !== "profile" &&
+            activeTab !== "emergency-contacts" && (
               <div className="flex h-full items-center justify-center text-center text-white">
                 <div>
                   <h1 className="text-4xl font-bold">
@@ -73,7 +78,6 @@ export default function Page() {
                 </div>
               </div>
             )}
-
         </NavigationStack>
       </AppShell>
     </NavigationProvider>

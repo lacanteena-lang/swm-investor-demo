@@ -4,92 +4,97 @@ import {
   Bot,
   Navigation,
   ShieldAlert,
-  MapPinned,
+  Users,
 } from "lucide-react";
 
-import GlassCard from "../ui/GlassCard";
-import SectionHeader from "../ui/SectionHeader";
-import { useNavigation } from "../navigation/NavigationContext";
-
-const actions = [
-  {
-    icon: Bot,
-    title: "AI Concierge",
-    subtitle: "Talk instantly",
-    tab: "ai",
-  },
-  {
-    icon: Navigation,
-    title: "Journey",
-    subtitle: "Start monitoring",
-    tab: "journey",
-  },
-  {
-    icon: ShieldAlert,
-    title: "Emergency SOS",
-    subtitle: "Immediate help",
-    tab: "sos",
-  },
-  {
-    icon: MapPinned,
-    title: "Nearby Help",
-    subtitle: "Police & Hospitals",
-    tab: "",
-  },
-];
-
 export default function QuickActions() {
-
-  const { navigate } = useNavigation();
-
   return (
-    <GlassCard className="p-6">
+    <section className="mt-5">
 
-      <SectionHeader
-        eyebrow="QUICK ACTIONS"
-        title="One Tap Access"
-        subtitle="Instant access to the most important safety features."
-      />
+      <h3 className="mb-3 text-[10px] font-semibold uppercase tracking-[0.34em] text-cyan-400">
+        QUICK ACTIONS
+      </h3>
 
-      <div className="mt-6 grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-4 gap-3">
 
-        {actions.map(({ icon: Icon, title, subtitle, tab }) => (
+        {/* SOS */}
 
-          <button
-            key={title}
-            onClick={() => {
-              if (tab) navigate(tab);
-            }}
-            className="
-              rounded-2xl
-              border
-              border-white/10
-              bg-white/5
-              p-5
-              transition-all
-              hover:bg-white/10
-            "
-          >
+        <button className="group rounded-[22px] border border-red-500/20 bg-[#0C182B]/95 p-4 backdrop-blur-xl transition-all duration-300 hover:border-red-400/50 hover:-translate-y-1">
 
-            <Icon
-              className="mx-auto text-cyan-300"
-              size={24}
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-red-500/10">
+
+            <ShieldAlert
+              size={22}
+              className="text-red-400"
             />
 
-            <p className="mt-3 text-center font-medium text-white">
-              {title}
-            </p>
+          </div>
 
-            <p className="mt-1 text-center text-xs text-white/55">
-              {subtitle}
-            </p>
+          <p className="mt-3 text-center text-[11px] font-medium text-white">
+            SOS
+          </p>
 
-          </button>
+        </button>
 
-        ))}
+        {/* AI */}
+
+        <button className="group rounded-[22px] border border-cyan-400/10 bg-[#0C182B]/95 p-4 backdrop-blur-xl transition-all duration-300 hover:border-cyan-400/40 hover:-translate-y-1">
+
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-cyan-500/10">
+
+            <Bot
+              size={22}
+              className="text-cyan-400"
+            />
+
+          </div>
+
+          <p className="mt-3 text-center text-[11px] font-medium text-white">
+            AI
+          </p>
+
+        </button>
+
+        {/* Journey */}
+
+        <button className="group rounded-[22px] border border-cyan-400/10 bg-[#0C182B]/95 p-4 backdrop-blur-xl transition-all duration-300 hover:border-cyan-400/40 hover:-translate-y-1">
+
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-cyan-500/10">
+
+            <Navigation
+              size={22}
+              className="text-cyan-400"
+            />
+
+          </div>
+
+          <p className="mt-3 text-center text-[11px] font-medium text-white">
+            Journey
+          </p>
+
+        </button>
+
+        {/* Family */}
+
+        <button className="group rounded-[22px] border border-cyan-400/10 bg-[#0C182B]/95 p-4 backdrop-blur-xl transition-all duration-300 hover:border-cyan-400/40 hover:-translate-y-1">
+
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-cyan-500/10">
+
+            <Users
+              size={22}
+              className="text-cyan-400"
+            />
+
+          </div>
+
+          <p className="mt-3 text-center text-[11px] font-medium text-white">
+            Family
+          </p>
+
+        </button>
 
       </div>
 
-    </GlassCard>
+    </section>
   );
 }

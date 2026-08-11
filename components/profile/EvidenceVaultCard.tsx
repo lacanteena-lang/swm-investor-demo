@@ -1,5 +1,6 @@
 "use client";
 
+import { motion } from "framer-motion";
 import {
   FolderLock,
   Camera,
@@ -37,98 +38,199 @@ const items = [
 
 export default function EvidenceVaultCard() {
   return (
-    <GlassCard className="p-6">
+    <GlassCard>
+      <div className="w-full min-w-0 px-3">
 
-      <div className="flex items-center justify-between">
+        {/* Header */}
 
-        <div>
+        <div className="flex items-start justify-between gap-4">
 
-          <p className="text-xs uppercase tracking-[0.30em] text-cyan-300/70">
-            EVIDENCE VAULT
-          </p>
+          <div className="min-w-0">
 
-          <h2 className="mt-2 text-2xl font-bold text-white">
-            Secure Evidence Storage
-          </h2>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.30em] text-cyan-300">
+              EVIDENCE VAULT
+            </p>
 
-        </div>
+            <h2 className="mt-2 text-[23px] font-bold tracking-tight text-white">
+              Secure Evidence Storage
+            </h2>
 
-        <FolderLock
-          size={28}
-          className="text-cyan-300"
-        />
-
-      </div>
-
-      <div className="mt-6">
-
-        <StatusBadge
-          label="Encrypted Cloud Storage"
-          color="green"
-        />
-
-      </div>
-
-      <div className="mt-8 space-y-4">
-
-        {items.map(({ icon: Icon, title, value }) => (
-
-          <div
-            key={title}
-            className="
-              flex
-              items-center
-              justify-between
-              rounded-2xl
-              bg-white/5
-              p-4
-            "
-          >
-
-            <div className="flex items-center gap-3">
-
-              <div className="flex h-11 w-11 items-center justify-center rounded-full bg-cyan-400/10">
-
-                <Icon
-                  size={20}
-                  className="text-cyan-300"
-                />
-
-              </div>
-
-              <span className="text-white">
-                {title}
-              </span>
-
-            </div>
-
-            <span className="text-sm text-white/55">
-              {value}
-            </span>
+            <p className="... font-semibold text-red-400">
+  Emergency evidence is organized and protected in one secure vault.
+</p>
+              
+            
 
           </div>
 
-        ))}
+          <motion.div
+            animate={{
+              opacity: [0.55, 1, 0.55],
+              scale: [1, 1.05, 1],
+            }}
+            transition={{
+              duration: 2.2,
+              repeat: Infinity,
+              ease: "easeInOut",
+            }}
+            className="
+              flex
+              h-11
+              w-11
+              shrink-0
+              items-center
+              justify-center
+              rounded-xl
+              border
+              border-cyan-400/10
+              bg-cyan-400/10
+            "
+          >
+            <FolderLock
+              size={21}
+              strokeWidth={1.8}
+              className="text-cyan-300"
+            />
+          </motion.div>
 
-      </div>
+        </div>
 
-      <div className="mt-8 rounded-2xl bg-white/5 p-4">
 
-        <div className="flex items-center gap-3">
+        {/* Security Status */}
 
-          <Lock
-            size={20}
-            className="text-emerald-300"
+        <div className="mt-5">
+
+          <StatusBadge
+            label="Encrypted Cloud Storage"
+            color="green"
           />
 
-          <p className="text-sm text-white/70">
-            All emergency evidence is encrypted and protected from tampering.
-          </p>
+        </div>
+
+
+        {/* Evidence Categories */}
+
+        <div className="mt-6 space-y-3">
+
+          {items.map(
+            ({ icon: Icon, title, value }, index) => (
+
+              <motion.div
+                key={title}
+                initial={{
+                  opacity: 0,
+                  x: -10,
+                }}
+                animate={{
+                  opacity: 1,
+                  x: 0,
+                }}
+                transition={{
+                  delay: index * 0.08,
+                  duration: 0.3,
+                }}
+                className="
+                  flex
+                  items-center
+                  justify-between
+                  gap-3
+                  rounded-2xl
+                  border
+                  border-white/5
+                  bg-white/[0.04]
+                  p-4
+                "
+              >
+
+                <div className="flex min-w-0 items-center gap-3">
+
+                  <div
+                    className="
+                      flex
+                      h-11
+                      w-11
+                      shrink-0
+                      items-center
+                      justify-center
+                      rounded-xl
+                      bg-cyan-400/10
+                    "
+                  >
+                    <Icon
+                      size={20}
+                      strokeWidth={1.8}
+                      className="text-cyan-300"
+                    />
+                  </div>
+
+                  <span className="truncate text-[12px] font-semibold text-white">
+                    {title}
+                  </span>
+
+                </div>
+
+                <span className="shrink-0 text-[10px] font-medium text-white/45">
+                  {value}
+                </span>
+
+              </motion.div>
+
+            ),
+          )}
+
+        </div>
+
+
+        {/* Protection Message */}
+
+        <div className="mt-5 rounded-2xl border border-emerald-400/10 bg-emerald-400/[0.035] p-4">
+
+          <div className="flex items-start gap-3">
+
+            <Lock
+              size={19}
+              strokeWidth={1.8}
+              className="mt-0.5 shrink-0 text-emerald-300"
+            />
+
+            <div>
+
+              <p className="text-[11px] font-semibold text-white">
+                Protected Evidence
+              </p>
+
+              <p className="mt-1 text-[10px] leading-5 text-white/45">
+                Emergency evidence is encrypted and protected from tampering.
+              </p>
+
+            </div>
+
+            <motion.span
+              animate={{
+                opacity: [0.35, 1, 0.35],
+              }}
+              transition={{
+                duration: 1.8,
+                repeat: Infinity,
+                ease: "easeInOut",
+              }}
+              className="
+                ml-auto
+                mt-1
+                h-2
+                w-2
+                shrink-0
+                rounded-full
+                bg-emerald-400
+                shadow-[0_0_10px_rgba(52,211,153,0.8)]
+              "
+            />
+
+          </div>
 
         </div>
 
       </div>
-
     </GlassCard>
   );
 }

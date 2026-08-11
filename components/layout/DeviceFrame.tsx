@@ -18,50 +18,36 @@ export default function DeviceFrame({ children }: Props) {
 
     window.addEventListener("resize", update);
 
-    return () => window.removeEventListener("resize", update);
+    return () => {
+      window.removeEventListener("resize", update);
+    };
   }, []);
 
-  // ------------------------------
-  // MOBILE
-  // ------------------------------
-
+  /* On an actual phone/tablet, use the full screen */
   if (mobile) {
     return (
-      <div
-        className="
-          relative
-          h-[100dvh]
-          w-screen
-          overflow-hidden
-          bg-[#09111F]
-        "
-      >
+      <div className="relative h-screen w-screen overflow-hidden bg-black">
         {children}
       </div>
     );
   }
 
-  // ------------------------------
-  // DESKTOP
-  // ------------------------------
-
+  /* On desktop, create the actual phone */
   return (
     <div
       className="
         relative
+        mx-auto
         h-[844px]
-        w-[430px]
+        w-[390px]
         overflow-hidden
         rounded-[48px]
         border
-        border-white/10
-        bg-[#09111F]/90
-        shadow-[0_40px_120px_rgba(0,0,0,0.70)]
-        backdrop-blur-3xl
+        border-white/15
+        bg-black
+        shadow-[0_30px_100px_rgba(0,0,0,0.55)]
       "
     >
-      <div className="absolute inset-0 rounded-[48px] ring-1 ring-cyan-400/10 pointer-events-none" />
-
       {children}
     </div>
   );

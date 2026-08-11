@@ -1,7 +1,6 @@
 "use client";
 
 import { ReactNode } from "react";
-
 import BottomNavigation from "../navigation/BottomNavigation";
 
 type Props = {
@@ -16,23 +15,19 @@ export default function ScreenLayout({
   setActiveTab,
 }: Props) {
   return (
-    <div className="relative h-full">
-
+    <>
       {/* Screen Content */}
-
-      <div className="h-full overflow-hidden pb-24">
+      <div className="relative z-0 h-full overflow-hidden pb-24">
         {children}
       </div>
 
       {/* Fixed Bottom Navigation */}
-
-      <div className="absolute inset-x-0 bottom-0">
+      <div className="pointer-events-auto absolute inset-x-0 bottom-0 z-50">
         <BottomNavigation
           activeTab={activeTab}
           setActiveTab={setActiveTab}
         />
       </div>
-
-    </div>
+    </>
   );
 }

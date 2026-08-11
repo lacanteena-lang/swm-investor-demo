@@ -12,48 +12,67 @@ export default function LogoPanel() {
         scale: [1, 1.015, 1],
       }}
       transition={{
-        duration: 4,
+        duration: 5,
         repeat: Infinity,
         ease: "easeInOut",
       }}
-      className="relative mx-auto mt-6"
+      className="relative mx-auto mt-2"
     >
-      {/* Ambient Glow */}
+      {/* Premium Ambient Glow */}
 
       <div
         className="
           absolute
           inset-0
-          rounded-[28px]
-          bg-cyan-500/20
-          blur-3xl
-          scale-105
+          scale-110
+          rounded-[32px]
+          bg-cyan-400/20
+          blur-[60px]
         "
       />
 
-      {/* Premium Logo Card */}
+      {/* Outer Glass */}
 
       <div
         className="
           relative
-          rounded-[24px]
+          rounded-[32px]
           border
-          border-cyan-400/20
-          bg-[#09111F]/80
-          px-5
-          py-5
-          backdrop-blur-2xl
-          shadow-[0_0_40px_rgba(34,211,238,0.18)]
+          border-cyan-400/15
+          bg-gradient-to-br
+          from-white/8
+          via-[#0B1628]/90
+          to-[#08111E]
+          p-2
+          backdrop-blur-3xl
+          shadow-[0_0_60px_rgba(34,211,238,0.18)]
         "
       >
-        <Image
-          src="/images/swm-logo.png"
-          alt="Stay With Me"
-          width={200}
-          height={200}
-          priority
-          className="mx-auto object-contain"
-        />
+
+        {/* Inner Card */}
+
+        <div
+          className="
+            rounded-[28px]
+            border
+            border-white/5
+            bg-[#09111F]/80
+            px-6
+            py-6
+          "
+        >
+
+          <Image
+            src="/images/swm-logo.png"
+            alt="Stay With Me"
+            width={210}
+            height={210}
+            priority
+            className="mx-auto object-contain"
+          />
+
+        </div>
+
       </div>
 
     </motion.div>

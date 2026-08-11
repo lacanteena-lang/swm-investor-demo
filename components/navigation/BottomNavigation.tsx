@@ -1,15 +1,12 @@
 "use client";
 
-import { Home, Bot, Navigation, Bell, User } from "lucide-react";
-import { motion } from "framer-motion";
-
-const items = [
-  { id: "home", icon: Home },
-  { id: "ai", icon: Bot },
-  { id: "journey", icon: Navigation },
-  { id: "sos", icon: Bell },
-  { id: "profile", icon: User },
-];
+import {
+  Bot,
+  Home,
+  Navigation,
+  ShieldAlert,
+  User,
+} from "lucide-react";
 
 type Props = {
   activeTab: string;
@@ -21,77 +18,179 @@ export default function BottomNavigation({
   setActiveTab,
 }: Props) {
   return (
-    <div className="absolute left-0 right-0 -bottom-8 z-40 px-5">
+    <div className="relative overflow-hidden rounded-[30px] border border-cyan-400/10 bg-[#081321]/95 backdrop-blur-2xl">
 
-      <div
-        className="
-          rounded-full
-          border
-          border-white/10
-          bg-black/70
-          backdrop-blur-3xl
-          shadow-[0_20px_60px_rgba(0,0,0,0.45)]
-          px-2
-          py-1
-        "
+      {/* Ambient Glow */}
+
+      <div className="absolute inset-0 bg-gradient-to-r from-red-500/5 via-transparent to-cyan-500/5" />
+
+      <div className="relative grid grid-cols-5 px-3 py-3">
+        {/* HOME */}
+
+      <button
+        onClick={() => setActiveTab("home")}
+        className="flex flex-col items-center"
       >
-        <div className="grid grid-cols-5 place-items-center">
-
-          {items.map(({ id, icon: Icon }) => {
-            const active = activeTab === id;
-
-            return (
-              <motion.button
-                key={id}
-                onClick={() => setActiveTab(id)}
-                whileTap={{ scale: 0.94 }}
-                animate={active ? { scale: 1.05 } : { scale: 1 }}
-                transition={{ duration: 0.2 }}
-                className={`
-                  relative
-                  flex
-                  h-11
-                  w-11
-                  items-center
-                  justify-center
-                  rounded-full
-                  transition-all
-                  duration-300
-                  ${
-                    active
-                      ? "bg-[#FF3B30]/20 shadow-[0_0_20px_rgba(255,59,48,0.35)]"
-                      : "hover:bg-white/5"
-                  }
-                `}
-              >
-                <Icon
-                  size={22}
-                  className={
-                    active
-                      ? "text-[#FF3B30]"
-                      : "text-white/70"
-                  }
-                />
-
-                {active && (
-                  <motion.div
-                    layoutId="nav-dot"
-                    className="
-                      absolute
-                      -bottom-1
-                      h-2
-                      w-2
-                      rounded-full
-                      bg-[#FF3B30]
-                    "
-                  />
-                )}
-              </motion.button>
-            );
-          })}
-
+        <div
+          className={`flex h-11 w-11 items-center justify-center rounded-2xl transition-all duration-300 ${
+            activeTab === "home"
+              ? "bg-gradient-to-br from-red-500/25 to-red-600/20 shadow-[0_0_30px_rgba(239,68,68,0.45)]"
+              : ""
+          }`}
+        >
+          <Home
+            size={20}
+            className={
+              activeTab === "home"
+                ? "text-red-400"
+                : "text-white/60"
+            }
+          />
         </div>
-      </div>
+
+        <span
+          className={`mt-2 text-[10px] font-semibold ${
+            activeTab === "home"
+              ? "text-red-400"
+              : "text-white/60"
+          }`}
+        >
+          Home
+        </span>
+      </button>
+       {/* AI */}
+
+      <button
+        onClick={() => setActiveTab("ai")}
+        className="flex flex-col items-center"
+      >
+        <div
+          className={`flex h-11 w-11 items-center justify-center rounded-2xl transition-all duration-300 ${
+            activeTab === "ai"
+              ? "bg-gradient-to-br from-red-500/25 to-red-600/20 shadow-[0_0_30px_rgba(239,68,68,0.45)]"
+              : ""
+          }`}
+        >
+          <Bot
+            size={20}
+            className={
+              activeTab === "ai"
+                ? "text-red-400"
+                : "text-white/60"
+            }
+          />
+        </div>
+
+        <span
+          className={`mt-2 text-[10px] font-semibold ${
+            activeTab === "ai"
+              ? "text-red-400"
+              : "text-white/60"
+          }`}
+        >
+          AI
+        </span>
+      </button>
+      {/* JOURNEY */}
+
+      <button
+        onClick={() => setActiveTab("journey")}
+        className="flex flex-col items-center"
+      >
+        <div
+          className={`flex h-11 w-11 items-center justify-center rounded-2xl transition-all duration-300 ${
+            activeTab === "journey"
+              ? "bg-gradient-to-br from-red-500/25 to-red-600/20 shadow-[0_0_30px_rgba(239,68,68,0.45)]"
+              : ""
+          }`}
+        >
+          <Navigation
+            size={20}
+            className={
+              activeTab === "journey"
+                ? "text-red-400"
+                : "text-white/60"
+            }
+          />
+        </div>
+
+        <span
+          className={`mt-2 text-[10px] font-semibold ${
+            activeTab === "journey"
+              ? "text-red-400"
+              : "text-white/60"
+          }`}
+        >
+          Journey
+        </span>
+      </button>
+      {/* SOS */}
+
+      <button
+        onClick={() => setActiveTab("sos")}
+        className="flex flex-col items-center"
+      >
+        <div
+          className={`flex h-11 w-11 items-center justify-center rounded-2xl transition-all duration-300 ${
+            activeTab === "sos"
+              ? "bg-gradient-to-br from-red-500/25 to-red-600/20 shadow-[0_0_30px_rgba(239,68,68,0.45)]"
+              : ""
+          }`}
+        >
+          <ShieldAlert
+            size={20}
+            className={
+              activeTab === "sos"
+                ? "text-red-400"
+                : "text-white/60"
+            }
+          />
+        </div>
+
+        <span
+          className={`mt-2 text-[10px] font-semibold ${
+            activeTab === "sos"
+              ? "text-red-400"
+              : "text-white/60"
+          }`}
+        >
+          SOS
+        </span>
+      </button>
+      {/* PROFILE */}
+
+      <button
+        onClick={() => setActiveTab("profile")}
+        className="flex flex-col items-center"
+      >
+        <div
+          className={`flex h-11 w-11 items-center justify-center rounded-2xl transition-all duration-300 ${
+            activeTab === "profile"
+              ? "bg-gradient-to-br from-red-500/25 to-red-600/20 shadow-[0_0_30px_rgba(239,68,68,0.45)]"
+              : ""
+          }`}
+        >
+          <User
+            size={20}
+            className={
+              activeTab === "profile"
+                ? "text-red-400"
+                : "text-white/60"
+            }
+          />
+        </div>
+
+        <span
+          className={`mt-2 text-[10px] font-semibold ${
+            activeTab === "profile"
+              ? "text-red-400"
+              : "text-white/60"
+          }`}
+        >
+          Profile
+        </span>
+      </button>
+       </div>
 
     </div>
   );
