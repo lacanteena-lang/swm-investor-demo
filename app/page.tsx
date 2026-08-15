@@ -18,9 +18,13 @@ export default function Page() {
   const [activeTab, setActiveTab] = useState("home");
 
   return (
-    <NavigationProvider>
+    <NavigationProvider
+      navigate={setActiveTab}
+    >
       <AppShell>
-        <NavigationStack>
+        <NavigationStack
+          screenKey={activeTab}
+        >
           {activeTab === "home" && (
             <HomeScreen
               activeTab={activeTab}
