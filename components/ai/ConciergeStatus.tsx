@@ -26,7 +26,6 @@ export default function ConciergeStatus() {
 
         <div className="pointer-events-none absolute -bottom-16 left-10 h-32 w-32 rounded-full bg-emerald-400/10 blur-[60px]" />
 
-
         <div className="relative flex items-center justify-between">
 
           {/* Concierge identity */}
@@ -67,9 +66,7 @@ export default function ConciergeStatus() {
               />
             </motion.div>
 
-
             <div>
-
               <p className="text-[11px] font-bold uppercase tracking-[0.28em] text-cyan-300">
                 PERSONAL SAFETY CONCIERGE
               </p>
@@ -77,11 +74,8 @@ export default function ConciergeStatus() {
               <h2 className="mt-1 text-[28px] font-bold leading-tight tracking-tight text-white">
                 Always Available
               </h2>
-
             </div>
-
           </div>
-
 
           {/* LIVE indicator */}
 
@@ -109,7 +103,6 @@ export default function ConciergeStatus() {
               py-2
             "
           >
-
             <motion.span
               animate={{
                 scale: [1, 1.35, 1],
@@ -131,11 +124,8 @@ export default function ConciergeStatus() {
             <span className="text-xs font-bold tracking-wide text-emerald-200">
               LIVE
             </span>
-
           </motion.div>
-
         </div>
-
 
         {/* =========================================================
             STATUS PANEL
@@ -143,8 +133,9 @@ export default function ConciergeStatus() {
 
         <div className="relative mt-6 space-y-3">
 
-
-          {/* AI CONCIERGE */}
+          {/* =====================================================
+              AI CONCIERGE
+          ===================================================== */}
 
           <motion.div
             whileHover={{ scale: 1.01 }}
@@ -154,26 +145,27 @@ export default function ConciergeStatus() {
               justify-between
               rounded-2xl
               border
-              border-cyan-300/15
-              bg-cyan-400/[0.07]
+              border-cyan-300/55
+              bg-gradient-to-br
+              from-[#0878D8]
+              via-[#0758B8]
+              to-[#063A83]
               px-4
               py-4
-              shadow-[0_0_24px_rgba(34,211,238,0.05)]
+              shadow-[inset_0_1px_0_rgba(255,255,255,0.12),0_8px_25px_rgba(0,110,255,0.22)]
             "
           >
-
             <div className="flex items-center gap-3">
 
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-cyan-300/15 bg-cyan-400/10">
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-red-400/30 bg-red-400/10">
                 <Bot
                   size={21}
                   strokeWidth={1.8}
-                  className="text-cyan-200"
+                  className="text-red-400 drop-shadow-[0_0_8px_rgba(248,113,113,0.75)]"
                 />
               </div>
 
               <div>
-
                 <p className="text-[16px] font-bold text-white">
                   AI Concierge
                 </p>
@@ -181,26 +173,21 @@ export default function ConciergeStatus() {
                 <p className="mt-0.5 text-[12px] text-white/55">
                   Monitoring your journey
                 </p>
-
               </div>
-
             </div>
 
-
             <div className="flex items-center gap-2">
-
               <span className="h-2 w-2 rounded-full bg-cyan-300 shadow-[0_0_10px_rgba(34,211,238,0.8)]" />
 
               <span className="text-[14px] font-bold text-cyan-200">
                 Active
               </span>
-
             </div>
-
           </motion.div>
 
-
-          {/* HUMAN CONCIERGE */}
+          {/* =====================================================
+              HUMAN CONCIERGE
+          ===================================================== */}
 
           <motion.div
             whileHover={{ scale: 1.01 }}
@@ -210,25 +197,27 @@ export default function ConciergeStatus() {
               justify-between
               rounded-2xl
               border
-              border-emerald-300/15
-              bg-emerald-400/[0.06]
+              border-cyan-300/55
+              bg-gradient-to-br
+              from-[#0878D8]
+              via-[#0758B8]
+              to-[#063A83]
               px-4
               py-4
+              shadow-[inset_0_1px_0_rgba(255,255,255,0.10),0_8px_25px_rgba(0,110,255,0.20)]
             "
           >
-
             <div className="flex items-center gap-3">
 
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-emerald-300/15 bg-emerald-400/10">
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-red-400/30 bg-red-400/10">
                 <ShieldCheck
                   size={21}
                   strokeWidth={1.8}
-                  className="text-emerald-200"
+                  className="text-red-400 drop-shadow-[0_0_8px_rgba(248,113,113,0.75)]"
                 />
               </div>
 
               <div>
-
                 <p className="text-[16px] font-bold text-white">
                   Human Concierge
                 </p>
@@ -236,26 +225,21 @@ export default function ConciergeStatus() {
                 <p className="mt-0.5 text-[12px] text-white/55">
                   Standing by 24/7
                 </p>
-
               </div>
-
             </div>
 
-
             <div className="flex items-center gap-2">
-
               <span className="h-2 w-2 rounded-full bg-emerald-300 shadow-[0_0_10px_rgba(52,211,153,0.8)]" />
 
               <span className="text-[14px] font-bold text-emerald-200">
                 Online
               </span>
-
             </div>
-
           </motion.div>
 
-
-          {/* RESPONSE TIME */}
+          {/* =====================================================
+              RESPONSE TIME
+          ===================================================== */}
 
           <motion.div
             whileHover={{ scale: 1.01 }}
@@ -265,25 +249,27 @@ export default function ConciergeStatus() {
               justify-between
               rounded-2xl
               border
-              border-white/10
-              bg-white/[0.045]
+              border-cyan-300/55
+              bg-gradient-to-br
+              from-[#0878D8]
+              via-[#0758B8]
+              to-[#063A83]
               px-4
               py-4
+              shadow-[inset_0_1px_0_rgba(255,255,255,0.10),0_8px_25px_rgba(0,110,255,0.20)]
             "
           >
-
             <div className="flex items-center gap-3">
 
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-white/10 bg-white/[0.05]">
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-red-400/30 bg-red-400/10">
                 <Clock3
                   size={21}
                   strokeWidth={1.8}
-                  className="text-cyan-200"
+                  className="text-red-400 drop-shadow-[0_0_8px_rgba(248,113,113,0.75)]"
                 />
               </div>
 
               <div>
-
                 <p className="text-[16px] font-bold text-white">
                   Response Time
                 </p>
@@ -291,20 +277,14 @@ export default function ConciergeStatus() {
                 <p className="mt-0.5 text-[12px] text-white/55">
                   Average response
                 </p>
-
               </div>
-
             </div>
-
 
             <span className="text-[16px] font-bold text-white">
               &lt;30 sec
             </span>
-
           </motion.div>
-
         </div>
-
 
         {/* =========================================================
             YOU'RE NEVER ALONE
@@ -329,27 +309,26 @@ export default function ConciergeStatus() {
             overflow-hidden
             rounded-2xl
             border
-            border-cyan-300/15
+            border-cyan-300/55
             bg-gradient-to-br
-            from-cyan-400/[0.10]
-            via-white/[0.04]
-            to-blue-400/[0.08]
+            from-[#0878D8]
+            via-[#0758B8]
+            to-[#063A83]
             p-5
+            shadow-[inset_0_1px_0_rgba(255,255,255,0.10),0_8px_25px_rgba(0,110,255,0.20)]
           "
         >
-
           <div className="flex items-start gap-3">
 
-            <div className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-cyan-400/10">
+            <div className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-red-400/30 bg-red-400/10">
               <CheckCircle2
                 size={22}
                 strokeWidth={1.8}
-                className="text-cyan-200"
+                className="text-red-400 drop-shadow-[0_0_8px_rgba(248,113,113,0.75)]"
               />
             </div>
 
             <div>
-
               <p className="text-[17px] font-bold text-white">
                 You're Never Alone
               </p>
@@ -359,15 +338,11 @@ export default function ConciergeStatus() {
                 your Personal Safety Concierge remains available to assist
                 whenever needed.
               </p>
-
             </div>
-
           </div>
-
         </motion.div>
 
       </div>
-
     </GlassCard>
   );
 }

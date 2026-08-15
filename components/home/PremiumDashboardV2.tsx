@@ -33,32 +33,34 @@ export default function PremiumDashboardV2({
     setNotificationsOpen(false);
   };
 
+  const goTo = (tab: string) => {
+    console.log(`SWM NOTIFICATION → ${tab}`);
+    setNotificationsOpen(false);
+    setActiveTab(tab);
+  };
+
   return (
     <div className="relative flex h-full min-h-0 flex-col overflow-hidden">
 
-      {/* Background Glow */}
+      {/* BACKGROUND GLOW */}
 
       <div className="pointer-events-none absolute inset-0">
-
         <div className="absolute left-1/2 top-[-170px] h-[380px] w-[380px] -translate-x-1/2 rounded-full bg-cyan-500/10 blur-[110px]" />
 
         <div className="absolute bottom-[-140px] left-1/2 h-[300px] w-[300px] -translate-x-1/2 rounded-full bg-blue-500/10 blur-[110px]" />
-
       </div>
 
 
-      {/* Header */}
+      {/* HEADER */}
 
       <div className="relative z-[60] flex shrink-0 items-center justify-between px-6 pt-1 pb-2">
 
         <div className="flex items-center gap-2">
-
           <div className="h-2 w-2 animate-pulse rounded-full bg-emerald-400" />
 
           <span className="text-[11px] font-semibold uppercase tracking-[0.32em] text-white/90">
             Concierge Online
           </span>
-
         </div>
 
 
@@ -94,7 +96,7 @@ export default function PremiumDashboardV2({
           <Bell
             size={17}
             strokeWidth={2}
-            className="pointer-events-none text-white"
+            className="pointer-events-none text-red-400"
           />
         </button>
 
@@ -120,28 +122,22 @@ export default function PremiumDashboardV2({
 
         {/* HERO */}
 
-        <div className="relative z-10 shrink-0 h-[265px]">
-
+        <div className="relative z-10 h-[265px] shrink-0">
           <HeroCard />
-
         </div>
 
 
         {/* JOURNEY */}
 
         <div className="relative z-10 min-h-0 flex-1 overflow-hidden">
-
           <JourneyCard setActiveTab={setActiveTab} />
-
         </div>
 
 
         {/* TODAY'S STATUS */}
 
-        <div className="relative z-10 shrink-0 h-[105px]">
-
+        <div className="relative z-10 h-[105px] shrink-0">
           <StatusCards />
-
         </div>
 
       </div>
@@ -185,18 +181,17 @@ export default function PremiumDashboardV2({
               rounded-3xl
               border
               border-white/10
-              bg-[#0B1729]/95
+              bg-[#06162F]/95
               shadow-[0_20px_60px_rgba(0,0,0,0.45)]
               backdrop-blur-2xl
             "
           >
 
-            {/* HEADER */}
+            {/* PANEL HEADER */}
 
             <div className="flex items-center justify-between border-b border-white/10 px-5 py-4">
 
               <div>
-
                 <p className="text-[9px] font-semibold uppercase tracking-[0.28em] text-cyan-300">
                   SAFETY CENTER
                 </p>
@@ -204,11 +199,10 @@ export default function PremiumDashboardV2({
                 <h3 className="mt-1 text-lg font-bold text-white">
                   Notifications
                 </h3>
-
               </div>
 
 
-              {/* CLOSE X */}
+              {/* CLOSE */}
 
               <button
                 type="button"
@@ -241,18 +235,47 @@ export default function PremiumDashboardV2({
             </div>
 
 
-            {/* NOTIFICATION ITEMS */}
+            {/* ================================================= */}
+            {/* FOUR NOTIFICATIONS */}
+            {/* ================================================= */}
 
             <div className="space-y-3 p-4">
 
-              {/* Protection */}
 
-              <div className="flex items-center gap-3 rounded-2xl bg-white/5 p-4">
+              {/* PROTECTION ACTIVE */}
 
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-400/10">
+              <button
+                type="button"
+                onClick={() => goTo("home")}
+                className="
+                  group
+                  flex
+                  w-full
+                  cursor-pointer
+                  items-center
+                  gap-3
+                  rounded-2xl
+                  border
+                  border-[#0878D8]/70
+                  bg-gradient-to-r
+                  from-[#063A83]
+                  via-[#0758B8]
+                  to-[#0878D8]
+                  p-4
+                  text-left
+                  shadow-[0_8px_25px_rgba(8,120,216,0.18)]
+                  transition-all
+                  duration-200
+                  hover:brightness-110
+                  active:scale-[0.99]
+                "
+              >
+
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/15">
 
                   <CheckCircle2
                     size={19}
+                    strokeWidth={2.2}
                     className="text-emerald-300"
                   />
 
@@ -260,101 +283,179 @@ export default function PremiumDashboardV2({
 
                 <div className="min-w-0">
 
-                  <p className="text-sm font-semibold text-white">
+                  <p className="text-[14px] font-extrabold leading-5 text-white">
                     Protection Active
                   </p>
 
-                  <p className="mt-1 text-[11px] leading-5 text-white/50">
+                  <p className="mt-1 text-[11px] font-medium leading-5 text-white/80">
                     Your Personal Safety Concierge is online.
                   </p>
 
                 </div>
 
-              </div>
+              </button>
 
 
-              {/* AI */}
+              {/* AI CONCIERGE READY */}
 
-              <div className="flex items-center gap-3 rounded-2xl bg-white/5 p-4">
+              <button
+                type="button"
+                onClick={() => goTo("ai")}
+                className="
+                  group
+                  flex
+                  w-full
+                  cursor-pointer
+                  items-center
+                  gap-3
+                  rounded-2xl
+                  border
+                  border-[#0878D8]/70
+                  bg-gradient-to-r
+                  from-[#063A83]
+                  via-[#0758B8]
+                  to-[#0878D8]
+                  p-4
+                  text-left
+                  shadow-[0_8px_25px_rgba(8,120,216,0.18)]
+                  transition-all
+                  duration-200
+                  hover:brightness-110
+                  active:scale-[0.99]
+                "
+              >
 
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-cyan-400/10">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/15">
 
                   <Bot
                     size={19}
-                    className="text-cyan-300"
+                    strokeWidth={2.2}
+                    className="text-cyan-100"
                   />
 
                 </div>
 
                 <div className="min-w-0">
 
-                  <p className="text-sm font-semibold text-white">
+                  <p className="text-[14px] font-extrabold leading-5 text-white">
                     AI Concierge Ready
                   </p>
 
-                  <p className="mt-1 text-[11px] leading-5 text-white/50">
+                  <p className="mt-1 text-[11px] font-medium leading-5 text-white/80">
                     AI assistance is available whenever you need it.
                   </p>
 
                 </div>
 
-              </div>
+              </button>
 
 
-              {/* Journey */}
+              {/* JOURNEY MONITORING */}
 
-              <div className="flex items-center gap-3 rounded-2xl bg-white/5 p-4">
+              <button
+                type="button"
+                onClick={() => goTo("journey")}
+                className="
+                  group
+                  flex
+                  w-full
+                  cursor-pointer
+                  items-center
+                  gap-3
+                  rounded-2xl
+                  border
+                  border-[#0878D8]/70
+                  bg-gradient-to-r
+                  from-[#063A83]
+                  via-[#0758B8]
+                  to-[#0878D8]
+                  p-4
+                  text-left
+                  shadow-[0_8px_25px_rgba(8,120,216,0.18)]
+                  transition-all
+                  duration-200
+                  hover:brightness-110
+                  active:scale-[0.99]
+                "
+              >
 
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-400/10">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/15">
 
                   <Navigation
                     size={19}
-                    className="text-blue-300"
+                    strokeWidth={2.2}
+                    className="text-cyan-100"
                   />
 
                 </div>
 
                 <div className="min-w-0">
 
-                  <p className="text-sm font-semibold text-white">
+                  <p className="text-[14px] font-extrabold leading-5 text-white">
                     Journey Monitoring
                   </p>
 
-                  <p className="mt-1 text-[11px] leading-5 text-white/50">
+                  <p className="mt-1 text-[11px] font-medium leading-5 text-white/80">
                     Start a protected journey whenever you're ready.
                   </p>
 
                 </div>
 
-              </div>
+              </button>
 
 
-              {/* Safety */}
+              {/* SAFETY SYSTEMS READY */}
 
-              <div className="flex items-center gap-3 rounded-2xl bg-white/5 p-4">
+              <button
+                type="button"
+                onClick={() => goTo("sos")}
+                className="
+                  group
+                  flex
+                  w-full
+                  cursor-pointer
+                  items-center
+                  gap-3
+                  rounded-2xl
+                  border
+                  border-[#0878D8]/70
+                  bg-gradient-to-r
+                  from-[#063A83]
+                  via-[#0758B8]
+                  to-[#0878D8]
+                  p-4
+                  text-left
+                  shadow-[0_8px_25px_rgba(8,120,216,0.18)]
+                  transition-all
+                  duration-200
+                  hover:brightness-110
+                  active:scale-[0.99]
+                "
+              >
 
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-400/10">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/15">
 
                   <Shield
                     size={19}
-                    className="text-emerald-300"
+                    strokeWidth={2.2}
+                    className="text-cyan-100"
                   />
 
                 </div>
 
                 <div className="min-w-0">
 
-                  <p className="text-sm font-semibold text-white">
+                  <p className="text-[14px] font-extrabold leading-5 text-white">
                     Safety Systems Ready
                   </p>
 
-                  <p className="mt-1 text-[11px] leading-5 text-white/50">
+                  <p className="mt-1 text-[11px] font-medium leading-5 text-white/80">
                     Emergency response systems are standing by.
                   </p>
 
                 </div>
 
-              </div>
+              </button>
 
             </div>
 

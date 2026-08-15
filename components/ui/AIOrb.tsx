@@ -20,8 +20,7 @@ export default function AIOrb({
         height: size,
       }}
     >
-      {/* Ambient Glow */}
-
+      {/* Ambient Glow — SWM Sealed Blue */}
       <motion.div
         animate={{
           scale: [1, 1.12, 1],
@@ -32,11 +31,10 @@ export default function AIOrb({
           repeat: Infinity,
           ease: "easeInOut",
         }}
-        className="absolute inset-[-18px] rounded-full bg-cyan-400/15 blur-[65px]"
+        className="absolute inset-[-18px] rounded-full bg-[#0878D8]/15 blur-[65px]"
       />
 
-      {/* Inner Glow */}
-
+      {/* Inner Glow — SWM Sealed Blue */}
       <motion.div
         animate={{
           scale: [0.95, 1.05, 0.95],
@@ -46,11 +44,10 @@ export default function AIOrb({
           repeat: Infinity,
           ease: "easeInOut",
         }}
-        className="absolute inset-3 rounded-full bg-cyan-400/10 blur-3xl"
+        className="absolute inset-3 rounded-full bg-[#0758B8]/10 blur-3xl"
       />
 
       {/* Main Orb */}
-
       <motion.div
         animate={{
           rotate: 360,
@@ -69,18 +66,16 @@ export default function AIOrb({
           justify-center
           rounded-full
           border
-          border-cyan-400/15
+          border-[#0878D8]/15
           bg-gradient-to-br
           from-[#163453]
           via-[#0E2036]
           to-[#08131F]
           backdrop-blur-3xl
-          shadow-[0_0_80px_rgba(34,211,238,0.25)]
+          shadow-[0_0_80px_rgba(8,120,216,0.25)]
         "
       >
-
         {/* Core */}
-
         <div
           className="
             absolute
@@ -89,13 +84,12 @@ export default function AIOrb({
             border
             border-white/5
             bg-gradient-to-br
-            from-cyan-400/10
+            from-[#0878D8]/10
             to-transparent
           "
         />
 
-        {/* AI Icon */}
-
+        {/* AI Icon — SWM Sealed Blue */}
         <motion.div
           animate={{
             scale: [1, 1.08, 1],
@@ -107,14 +101,12 @@ export default function AIOrb({
         >
           <Bot
             size={iconSize}
-            className="text-cyan-300"
+            className="text-[#0878D8]"
           />
         </motion.div>
-
       </motion.div>
 
-      {/* Orbit Ring */}
-
+      {/* Orbit Ring — SWM Sealed Blue */}
       <motion.div
         animate={{
           rotate: -360,
@@ -129,12 +121,11 @@ export default function AIOrb({
           inset-[-8px]
           rounded-full
           border
-          border-cyan-400/10
+          border-[#0758B8]/20
         "
       />
 
-      {/* Orbit Dot */}
-
+      {/* Orbit Dot — SWM Sealed Blue */}
       <motion.div
         animate={{
           rotate: 360,
@@ -155,8 +146,8 @@ export default function AIOrb({
             w-3
             -translate-x-1/2
             rounded-full
-            bg-cyan-300
-            shadow-[0_0_25px_rgba(34,211,238,0.9)]
+            bg-[#0878D8]
+            shadow-[0_0_25px_rgba(8,120,216,0.9)]
           "
         />
       </motion.div>

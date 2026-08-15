@@ -1,168 +1,168 @@
 "use client";
 
+import { motion } from "framer-motion";
 import {
-  BrainCircuit,
-  Radio,
   ShieldCheck,
-  Headphones,
+  BatteryFull,
+  Wifi,
+  CloudSun,
+  AlertTriangle,
+  Brain,
 } from "lucide-react";
+
+import GlassCard from "../ui/GlassCard";
 
 export default function LiveJourneyMetrics() {
   return (
-    <div className="rounded-3xl border border-cyan-400/10 bg-[#071322]/80 p-5 shadow-[0_15px_40px_rgba(0,0,0,0.30)]">
+    <GlassCard className="p-6">
 
       {/* Header */}
 
-      <div className="mb-5">
+      <div>
 
-        <p className="text-[9px] font-semibold uppercase tracking-[0.30em] text-cyan-300">
+        <p className="text-[10px] font-semibold uppercase tracking-[0.32em] text-cyan-300">
           LIVE AI ANALYSIS
         </p>
 
-        <h3 className="mt-2 text-[23px] font-bold tracking-tight text-white">
+        <h2 className="mt-2 text-2xl font-bold text-white">
           Journey Intelligence
-        </h3>
-
-        <p className="mt-2 text-[11px] leading-relaxed text-white/45">
-          SWM continuously watches the journey and keeps your safety support connected.
-        </p>
+        </h2>
 
       </div>
 
+      {/* Metrics */}
 
-      {/* Intelligence Cards */}
+      <div className="mt-6 grid grid-cols-2 gap-4">
 
-      <div className="grid grid-cols-2 gap-3">
+        {/* Safety */}
 
-        {/* AI MONITORING */}
+        <Metric
+          icon={<ShieldCheck size={20} />}
+          title="Safety Score"
+          value="98%"
+          color="text-emerald-300"
+        />
 
-        <div className="rounded-2xl border border-cyan-400/10 bg-white/[0.035] p-4">
+        {/* Battery */}
 
-          <BrainCircuit
-            size={21}
-            strokeWidth={1.8}
+        <Metric
+          icon={<BatteryFull size={20} />}
+          title="Battery"
+          value="82%"
+          color="text-cyan-300"
+        />
+
+        {/* Network */}
+
+        <Metric
+          icon={<Wifi size={20} />}
+          title="Network"
+          value="Excellent"
+          color="text-cyan-300"
+        />
+
+        {/* Weather */}
+
+        <Metric
+          icon={<CloudSun size={20} />}
+          title="Weather"
+          value="Clear"
+          color="text-emerald-300"
+        />
+
+      </div>
+
+      {/* AI Prediction */}
+
+      <div className="mt-6 rounded-2xl border border-cyan-400/10 bg-cyan-500/5 p-5">
+
+        <div className="flex items-center gap-3">
+
+          <Brain
+            size={22}
             className="text-cyan-300"
           />
 
-          <p className="mt-3 text-[9px] font-semibold uppercase tracking-[0.12em] text-white/45">
-            AI MONITORING
-          </p>
+          <div>
 
-          <p className="mt-1 text-[15px] font-semibold text-white">
-            Active
-          </p>
+            <p className="text-sm font-semibold text-white">
+              AI Prediction
+            </p>
 
-          <p className="mt-1 text-[9px] leading-relaxed text-white/40">
-            Journey continuously monitored
-          </p>
+            <p className="text-xs text-white/60">
+              Route appears safe.
+            </p>
+
+          </div>
 
         </div>
 
+      </div>
 
-        {/* JOURNEY PROTECTION */}
+      {/* Risk */}
 
-        <div className="rounded-2xl border border-emerald-400/10 bg-white/[0.035] p-4">
+      <div className="mt-4 rounded-2xl border border-emerald-400/10 bg-emerald-500/5 p-5">
 
-          <ShieldCheck
-            size={21}
-            strokeWidth={1.8}
+        <div className="flex items-center gap-3">
+
+          <AlertTriangle
+            size={22}
             className="text-emerald-300"
           />
 
-          <p className="mt-3 text-[9px] font-semibold uppercase tracking-[0.12em] text-white/45">
-            PROTECTION
-          </p>
+          <div>
 
-          <p className="mt-1 text-[15px] font-semibold text-emerald-300">
-            Active
-          </p>
+            <p className="text-sm font-semibold text-white">
+              Risk Assessment
+            </p>
 
-          <p className="mt-1 text-[9px] leading-relaxed text-white/40">
-            Protected route in progress
-          </p>
+            <p className="text-xs text-white/60">
+              Low risk detected. Continue on current route.
+            </p>
 
-        </div>
-
-
-        {/* LIVE CONNECTION */}
-
-        <div className="rounded-2xl border border-blue-400/10 bg-white/[0.035] p-4">
-
-          <Radio
-            size={21}
-            strokeWidth={1.8}
-            className="text-blue-300"
-          />
-
-          <p className="mt-3 text-[9px] font-semibold uppercase tracking-[0.12em] text-white/45">
-            LIVE CONNECTION
-          </p>
-
-          <p className="mt-1 text-[15px] font-semibold text-white">
-            Connected
-          </p>
-
-          <p className="mt-1 text-[9px] leading-relaxed text-white/40">
-            Journey information is active
-          </p>
-
-        </div>
-
-
-        {/* PERSONAL CONCIERGE */}
-
-        <div className="rounded-2xl border border-violet-400/10 bg-white/[0.035] p-4">
-
-          <Headphones
-            size={21}
-            strokeWidth={1.8}
-            className="text-violet-300"
-          />
-
-          <p className="mt-3 text-[9px] font-semibold uppercase tracking-[0.12em] text-white/45">
-            CONCIERGE
-          </p>
-
-          <p className="mt-1 text-[15px] font-semibold text-violet-300">
-            With You
-          </p>
-
-          <p className="mt-1 text-[9px] leading-relaxed text-white/40">
-            Personal support remains connected
-          </p>
+          </div>
 
         </div>
 
       </div>
 
+    </GlassCard>
+  );
+}
 
-      {/* AI MESSAGE */}
-
-      <div className="mt-4 flex items-center gap-3 rounded-2xl border border-cyan-400/10 bg-cyan-400/[0.04] p-4">
-
-        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-cyan-400/10">
-
-          <BrainCircuit
-            size={18}
-            className="text-cyan-300"
-          />
-
-        </div>
-
-        <div>
-
-          <p className="text-[10px] font-semibold text-white">
-            Journey protection is active
-          </p>
-
-          <p className="mt-1 text-[9px] text-white/45">
-            AI monitoring and Personal Concierge support are connected throughout your journey.
-          </p>
-
-        </div>
-
+function Metric({
+  icon,
+  title,
+  value,
+  color,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  value: string;
+  color: string;
+}) {
+  return (
+    <motion.div
+      animate={{
+        scale: [1, 1.02, 1],
+      }}
+      transition={{
+        duration: 2,
+        repeat: Infinity,
+      }}
+      className="rounded-2xl bg-white/5 p-4"
+    >
+      <div className={color}>
+        {icon}
       </div>
 
-    </div>
+      <p className="mt-3 text-[11px] uppercase tracking-[0.18em] text-white/45">
+        {title}
+      </p>
+
+      <p className={`mt-2 text-lg font-bold ${color}`}>
+        {value}
+      </p>
+    </motion.div>
   );
 }

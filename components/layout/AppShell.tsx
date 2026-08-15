@@ -1,7 +1,6 @@
 "use client";
 
 import { ReactNode, useEffect, useState } from "react";
-import { motion } from "framer-motion";
 
 import DeviceFrame from "./DeviceFrame";
 
@@ -29,22 +28,13 @@ export default function AppShell({ children }: Props) {
   return (
     <main className="relative h-full w-full">
 
-      {/* Animated Background */}
+      {/* STATIC BACKGROUND
+          Removed continuous large blurred animations to reduce GPU/RAM load. */}
 
       {!mobile && (
         <div className="pointer-events-none absolute inset-0 overflow-hidden">
 
-          <motion.div
-            animate={{
-              x: [0, 80, -40, 0],
-              y: [0, -40, 50, 0],
-              scale: [1, 1.08, 1],
-            }}
-            transition={{
-              duration: 22,
-              repeat: Infinity,
-              ease: "easeInOut",
-            }}
+          <div
             className="
               absolute
               -left-56
@@ -52,22 +42,12 @@ export default function AppShell({ children }: Props) {
               h-[650px]
               w-[650px]
               rounded-full
-              bg-cyan-500/20
-              blur-[180px]
+              bg-cyan-500/[0.10]
+              blur-[120px]
             "
           />
 
-          <motion.div
-            animate={{
-              x: [0, -70, 40, 0],
-              y: [0, 60, -30, 0],
-              scale: [1.04, 1, 1.06],
-            }}
-            transition={{
-              duration: 24,
-              repeat: Infinity,
-              ease: "easeInOut",
-            }}
+          <div
             className="
               absolute
               -bottom-56
@@ -75,8 +55,8 @@ export default function AppShell({ children }: Props) {
               h-[650px]
               w-[650px]
               rounded-full
-              bg-blue-600/20
-              blur-[190px]
+              bg-blue-600/[0.10]
+              blur-[130px]
             "
           />
 
@@ -85,7 +65,7 @@ export default function AppShell({ children }: Props) {
 
       <DeviceFrame>
 
-        {/* Device Border */}
+        {/* DEVICE BORDER */}
 
         {!mobile && (
           <div
@@ -101,7 +81,7 @@ export default function AppShell({ children }: Props) {
           />
         )}
 
-        {/* Status Bar */}
+        {/* STATUS BAR */}
 
         <div
           className={`
@@ -121,26 +101,15 @@ export default function AppShell({ children }: Props) {
           <span>9:41</span>
 
           <div className="flex gap-1">
-
             <div className="h-2 w-2 rounded-full bg-cyan-400" />
-
             <div className="h-2 w-2 rounded-full bg-white/70" />
-
             <div className="h-2 w-2 rounded-full bg-white/40" />
-
           </div>
         </div>
 
-        {/* Dynamic Island */}
+        {/* STATIC DYNAMIC ISLAND */}
 
-        <motion.div
-          animate={{
-            width: [128, 138, 128],
-          }}
-          transition={{
-            duration: 4,
-            repeat: Infinity,
-          }}
+        <div
           className={`
             pointer-events-none
             absolute
@@ -148,6 +117,7 @@ export default function AppShell({ children }: Props) {
             z-50
             flex
             h-9
+            w-[128px]
             -translate-x-1/2
             items-center
             justify-center
@@ -162,7 +132,7 @@ export default function AppShell({ children }: Props) {
           <span className="text-[11px] font-medium text-white/90">
             Protected
           </span>
-        </motion.div>
+        </div>
 
         {/* INTERACTIVE SCREEN AREA */}
 
@@ -171,9 +141,10 @@ export default function AppShell({ children }: Props) {
             absolute
             inset-x-0
             z-[999]
-            ${mobile
-              ? "top-14 bottom-0 px-4 pb-24"
-              : "top-[58px] bottom-0 px-5 pb-4"
+            ${
+              mobile
+                ? "top-14 bottom-0 px-4 pb-24"
+                : "top-[58px] bottom-0 px-5 pb-4"
             }
           `}
         >

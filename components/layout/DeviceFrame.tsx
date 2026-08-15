@@ -26,7 +26,7 @@ export default function DeviceFrame({ children }: Props) {
   /* On an actual phone/tablet, use the full screen */
   if (mobile) {
     return (
-      <div className="relative h-screen w-screen overflow-hidden bg-black">
+      <div className="relative h-screen w-screen overflow-hidden bg-[#010817]">
         {children}
       </div>
     );
@@ -44,7 +44,7 @@ export default function DeviceFrame({ children }: Props) {
         rounded-[48px]
         border
         border-white/15
-        bg-black
+        bg-[#010817]
         shadow-[0_30px_100px_rgba(0,0,0,0.55)]
       "
     >

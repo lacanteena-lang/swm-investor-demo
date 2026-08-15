@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import {
   HeartPulse,
@@ -67,6 +67,14 @@ export default function SafetyProfile() {
   const [selectedItem, setSelectedItem] = useState<string | null>(null);
 
   const [bloodGroup, setBloodGroup] = useState("");
+
+  // Restore the saved blood group when the profile is opened again.
+  useEffect(() => {
+    const savedBloodGroup = window.localStorage.getItem("swm-blood-group");
+    if (savedBloodGroup) {
+      setBloodGroup(savedBloodGroup);
+    }
+  }, []);
   const [medicalInfo, setMedicalInfo] = useState("");
 
   const [contacts, setContacts] = useState<EmergencyContact[]>(
@@ -107,6 +115,7 @@ export default function SafetyProfile() {
 
   const selectBloodGroup = (group: string) => {
     setBloodGroup(group);
+    window.localStorage.setItem("swm-blood-group", group);
     setSelectedItem(null);
   };
 
@@ -172,7 +181,7 @@ export default function SafetyProfile() {
     address.pinCode.trim();
 
   return (
-    <>
+    <div className="relative h-full w-full">
       <GlassCard className="overflow-visible">
 
         {/* HEADER */}
@@ -198,8 +207,8 @@ export default function SafetyProfile() {
 
             let displayValue = value;
 
-            if (label === "Blood Group" && bloodGroup) {
-              displayValue = bloodGroup;
+            if (label === "Blood Group") {
+              displayValue = bloodGroup || "Not Added";
             }
 
             if (label === "Medical Information" && medicalInfo) {
@@ -336,17 +345,16 @@ export default function SafetyProfile() {
       ===================================================== */}
 
       {selectedItem === "Blood Group" && (
-
-        <div
+          <div
           className="
-            fixed
+            absolute
             inset-0
             z-[999]
             flex
             items-center
             justify-center
             bg-black/75
-            p-5
+            p-0
             backdrop-blur-md
           "
           onClick={closePanel}
@@ -355,13 +363,17 @@ export default function SafetyProfile() {
           <div
             className="
               relative
+              flex
+              h-full
+              max-h-full
               w-full
               max-w-[390px]
+              flex-col
+              overflow-hidden
               rounded-[28px]
               border
               border-white/15
               bg-[#080d18]
-              p-6
               shadow-[0_0_70px_rgba(0,0,0,0.75)]
             "
             onClick={(event) => event.stopPropagation()}
@@ -410,7 +422,7 @@ export default function SafetyProfile() {
               "
             />
 
-            <div className="relative z-10">
+            <div className="relative z-10 shrink-0 p-6 pb-6">
 
               <p className="text-[10px] font-bold uppercase tracking-[0.30em] text-cyan-300">
                 SAFETY PROFILE
@@ -481,7 +493,7 @@ export default function SafetyProfile() {
 
         </div>
 
-      )}
+        )}
 
 
       {/* =====================================================
@@ -489,17 +501,16 @@ export default function SafetyProfile() {
       ===================================================== */}
 
       {selectedItem === "Medical Information" && (
-
-        <div
+          <div
           className="
-            fixed
+            absolute
             inset-0
             z-[999]
             flex
             items-center
             justify-center
             bg-black/75
-            p-5
+            p-0
             backdrop-blur-md
           "
           onClick={closePanel}
@@ -508,13 +519,17 @@ export default function SafetyProfile() {
           <div
             className="
               relative
+              flex
+              h-full
+              max-h-full
               w-full
               max-w-[390px]
+              flex-col
+              overflow-hidden
               rounded-[28px]
               border
               border-white/15
               bg-[#080d18]
-              p-6
               shadow-[0_0_70px_rgba(0,0,0,0.75)]
             "
             onClick={(event) => event.stopPropagation()}
@@ -563,7 +578,7 @@ export default function SafetyProfile() {
               <X size={20} />
             </button>
 
-            <div className="relative z-10">
+            <div className="relative z-10 shrink-0 p-6 pb-6">
 
               <p className="text-[10px] font-bold uppercase tracking-[0.30em] text-cyan-300">
                 SAFETY PROFILE
@@ -650,7 +665,7 @@ export default function SafetyProfile() {
 
         </div>
 
-      )}
+        )}
 
 
       {/* =====================================================
@@ -661,14 +676,14 @@ export default function SafetyProfile() {
 
         <div
           className="
-            fixed
+            absolute
             inset-0
             z-[999]
             flex
             items-center
             justify-center
             bg-black/75
-            p-5
+            p-0
             backdrop-blur-md
           "
           onClick={closePanel}
@@ -678,7 +693,8 @@ export default function SafetyProfile() {
             className="
               relative
               flex
-              max-h-[88vh]
+              h-full
+              max-h-full
               w-full
               max-w-[390px]
               flex-col
@@ -1150,17 +1166,16 @@ export default function SafetyProfile() {
       ===================================================== */}
 
       {selectedItem === "Home Address" && (
-
-        <div
+          <div
           className="
-            fixed
+            absolute
             inset-0
             z-[999]
             flex
             items-center
             justify-center
             bg-black/75
-            p-5
+            p-0
             backdrop-blur-md
           "
           onClick={closePanel}
@@ -1169,13 +1184,17 @@ export default function SafetyProfile() {
           <div
             className="
               relative
+              flex
+              h-full
+              max-h-full
               w-full
               max-w-[390px]
+              flex-col
+              overflow-hidden
               rounded-[28px]
               border
               border-white/15
               bg-[#080d18]
-              p-6
               shadow-[0_0_70px_rgba(0,0,0,0.75)]
             "
             onClick={(event) => event.stopPropagation()}
@@ -1232,7 +1251,7 @@ export default function SafetyProfile() {
 
             {/* CONTENT */}
 
-            <div className="relative z-10">
+            <div className="relative z-10 shrink-0 p-6 pb-6">
 
               <p className="text-[10px] font-bold uppercase tracking-[0.30em] text-cyan-300">
                 SAFETY PROFILE
@@ -1444,8 +1463,8 @@ export default function SafetyProfile() {
 
         </div>
 
-      )}
+        )}
 
-    </>
+    </div>
   );
 }

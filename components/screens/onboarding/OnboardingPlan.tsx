@@ -216,6 +216,47 @@ export default function OnboardingPlan() {
           "
         >
 
+          {/* BACK TO HOME */}
+          <button
+            type="button"
+            aria-label="Back to home"
+            onClick={() => router.push("/")}
+            className="
+              absolute
+              left-3
+              top-3
+              z-[80]
+              flex
+              min-w-[72px]
+              flex-col
+              items-center
+              justify-center
+              rounded-2xl
+              border
+              border-cyan-300/20
+              bg-black/25
+              px-2
+              pb-2
+              pt-1
+              text-cyan-200
+              backdrop-blur-md
+              transition-all
+              duration-200
+              hover:border-cyan-300/50
+              hover:bg-cyan-300/10
+              hover:shadow-[0_0_18px_rgba(34,211,238,0.25)]
+              active:scale-95
+            "
+          >
+            <span className="text-[20px] font-light leading-5 text-cyan-200 drop-shadow-[0_0_8px_rgba(34,211,238,0.9)]">
+              ←
+            </span>
+
+            <span className="mt-0.5 whitespace-nowrap text-[7px] font-black uppercase tracking-[0.12em] text-cyan-300 drop-shadow-[0_0_7px_rgba(34,211,238,0.8)]">
+              BACK TO HOME
+            </span>
+          </button>
+
           {/* ===================================================
               WELCOME
           =================================================== */}
@@ -234,7 +275,7 @@ export default function OnboardingPlan() {
                 font-semibold
                 uppercase
                 tracking-[0.25em]
-                text-white/65
+                text-white
               "
             >
               Personal Safety
@@ -306,7 +347,7 @@ export default function OnboardingPlan() {
                 text-center
                 text-[13px]
                 leading-6
-                text-white/55
+                text-white
               "
             >
               AI-powered protection backed by your
@@ -353,7 +394,7 @@ export default function OnboardingPlan() {
                     Protection that stays with you
                   </p>
 
-                  <p className="mt-1 text-[11px] leading-5 text-white/50">
+                  <p className="mt-1 text-[11px] leading-5 text-white">
                     Intelligent support when you need it.
                     <br />
                     Human support when it matters.
@@ -394,7 +435,7 @@ export default function OnboardingPlan() {
               Welcome to SWM
             </h2>
 
-            <p className="mt-2 text-[12px] leading-5 text-white/45">
+            <p className="mt-2 text-[12px] leading-5 text-white">
               Create your account to begin your personal safety journey.
             </p>
 
@@ -435,7 +476,7 @@ export default function OnboardingPlan() {
               Choose Your Protection
             </h2>
 
-            <p className="mt-2 text-[13px] leading-5 text-white/45">
+            <p className="mt-2 text-[13px] leading-5 text-white">
               Select the SWM experience that&apos;s right for you.
             </p>
 
@@ -484,7 +525,7 @@ export default function OnboardingPlan() {
                   Secure Payment
                 </h2>
 
-                <p className="mt-2 text-[12px] leading-5 text-white/45">
+                <p className="mt-2 text-[12px] leading-5 text-white">
                   Choose how you&apos;d like to pay for your SWM protection.
                 </p>
 
@@ -543,7 +584,7 @@ export default function OnboardingPlan() {
               Verify Your Mobile
             </h2>
 
-            <p className="mt-2 text-[12px] text-white/45">
+            <p className="mt-2 text-[12px] text-white">
               Enter the 6-digit OTP sent to your mobile.
             </p>
 
@@ -585,7 +626,7 @@ export default function OnboardingPlan() {
 
             <div className="mt-4 flex justify-between">
 
-              <span className="text-[10px] text-white/30">
+              <span className="text-[10px] text-white/80">
                 OTP sent to your mobile
               </span>
 
@@ -644,7 +685,7 @@ export default function OnboardingPlan() {
                   otpComplete &&
                   !processing
                     ? "bg-[#880001] text-white shadow-[0_0_18px_rgba(136,0,1,0.95),0_0_42px_rgba(136,0,1,0.55)]"
-                    : "bg-[#3a0708] text-white/30"
+                    : "bg-[#3a0708] text-white/80"
                 }
               `}
             >
@@ -672,7 +713,7 @@ export default function OnboardingPlan() {
 
             </button>
 
-            <p className="mt-4 text-center text-[9px] text-white/25">
+            <p className="mt-4 text-center text-[9px] text-white/75">
               Secure • Private • AI-Assisted • Human-Supported
             </p>
 
@@ -768,7 +809,7 @@ function PlanCard({
 
       {/* PLAN NAME */}
 
-      <p className="text-[12px] font-medium text-white/50">
+      <p className="text-[12px] font-medium text-white">
         {plan.subtitle}
       </p>
 
@@ -784,7 +825,7 @@ function PlanCard({
           {plan.price}
         </span>
 
-        <span className="mb-1 text-[11px] text-white/45">
+        <span className="mb-1 text-[11px] text-white">
           / month
         </span>
 
@@ -804,7 +845,7 @@ function PlanCard({
                 ? "text-red-300"
                 : blue
                   ? "text-blue-300"
-                  : "text-white/45"
+                  : "text-white"
             }
           `}
         >
@@ -851,7 +892,7 @@ function PlanCard({
                 ✓
               </span>
 
-              <span className="text-[12px] leading-[1.35] text-white/70">
+              <span className="text-[12px] leading-[1.35] text-white">
                 {feature}
               </span>
 
@@ -923,7 +964,7 @@ function Value({
         {icon}
       </div>
 
-      <span className="text-center text-[8px] font-bold tracking-[0.08em] text-white/65">
+      <span className="text-center text-[8px] font-bold tracking-[0.08em] text-white">
         {title}
       </span>
 
@@ -958,7 +999,7 @@ function Input({
       "
     >
 
-      <p className="text-[9px] font-bold uppercase tracking-[0.14em] text-white/40">
+      <p className="text-[9px] font-bold uppercase tracking-[0.14em] text-white">
         {label}
       </p>
 
@@ -975,7 +1016,7 @@ function Input({
           text-[14px]
           text-white
           outline-none
-          placeholder:text-white/25
+          placeholder:text-white/75
         "
       />
 
@@ -1010,7 +1051,7 @@ function Payment({
         ${
           active
             ? "border-cyan-300/50 bg-cyan-300/10 text-cyan-200"
-            : "border-white/10 bg-white/[0.035] text-white/55"
+            : "border-white/10 bg-white/[0.035] text-white"
         }
       `}
     >
@@ -1072,7 +1113,7 @@ function Divider({
 
       <div className="h-px flex-1 bg-white/10" />
 
-      <span className="whitespace-nowrap text-[9px] font-bold uppercase tracking-[0.15em] text-white/30">
+      <span className="whitespace-nowrap text-[9px] font-bold uppercase tracking-[0.15em] text-white/80">
         {text}
       </span>
 
