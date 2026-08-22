@@ -37,6 +37,24 @@ export default function SOSHome({
   const [responseStep, setResponseStep] = useState(0);
   const [activating, setActivating] = useState(false);
   const [conciergeOpen, setConciergeOpen] = useState(false);
+  const [conciergeCardOpen, setConciergeCardOpen] = useState(false);
+  const [contactsCardOpen, setContactsCardOpen] = useState(false);
+  const [aiEngineOpen, setAiEngineOpen] = useState(false);
+  const [evidenceVaultOpen, setEvidenceVaultOpen] = useState(false);
+  const [photoReadyOpen, setPhotoReadyOpen] = useState(false);
+  const [videoReadyOpen, setVideoReadyOpen] = useState(false);
+  const [audioReadyOpen, setAudioReadyOpen] = useState(false);
+  const [timelineReadyOpen, setTimelineReadyOpen] = useState(false);
+  const [conciergeReadyOpen, setConciergeReadyOpen] = useState(false);
+  const [locationReadyOpen, setLocationReadyOpen] = useState(false);
+  const [dataSyncReadyOpen, setDataSyncReadyOpen] = useState(false);
+  const [alertsReadyOpen, setAlertsReadyOpen] = useState(false);
+  const [workflowOpen, setWorkflowOpen] = useState<string | null>(null);
+  const [conciergeBannerOpen, setConciergeBannerOpen] = useState(false);
+  const [humanSupportOpen, setHumanSupportOpen] = useState(false);
+  const [contactsStatusOpen, setContactsStatusOpen] = useState(false);
+  const [monitoringStatusOpen, setMonitoringStatusOpen] = useState(false);
+  const [conciergeConnectionOpen, setConciergeConnectionOpen] = useState(false);
 
   const activateSOS = () => {
     if (activated || activating) return;
@@ -309,6 +327,7 @@ export default function SOSHome({
             status={responseStep >= 1 ? "ACTIVE" : "READY"}
             tone="cyan"
             active={responseStep >= 1}
+            onClick={() => setAiEngineOpen((open) => !open)}
           />
           <NetworkCard
             icon={<Headphones size={22} />}
@@ -316,6 +335,7 @@ export default function SOSHome({
             status={responseStep >= 2 ? "CONNECTED" : "ONLINE"}
             tone="violet"
             active={responseStep >= 2}
+            onClick={() => setConciergeCardOpen((open) => !open)}
           />
           <NetworkCard
             icon={<Users size={22} />}
@@ -323,6 +343,7 @@ export default function SOSHome({
             status={responseStep >= 3 ? "NOTIFIED" : "READY"}
             tone="orange"
             active={responseStep >= 3}
+            onClick={() => setContactsCardOpen((open) => !open)}
           />
           <NetworkCard
             icon={<LockKeyhole size={22} />}
@@ -330,8 +351,186 @@ export default function SOSHome({
             status={responseStep >= 4 ? "ACTIVE" : "SECURED"}
             tone="green"
             active={responseStep >= 4}
+            onClick={() => setEvidenceVaultOpen((open) => !open)}
           />
         </div>
+
+        {aiEngineOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: -6, height: 0 }}
+            animate={{ opacity: 1, y: 0, height: "auto" }}
+            className="mt-2 overflow-hidden rounded-2xl border border-cyan-300/25 bg-cyan-400/[0.04] shadow-[0_0_20px_rgba(34,211,238,0.08)]"
+          >
+            <div className="p-3.5">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-cyan-300/30 bg-cyan-400/10 text-cyan-300">
+                  <Cpu size={20} />
+                </div>
+
+                <div className="min-w-0 flex-1">
+                  <p className="text-[10px] font-bold text-white">
+                    AI Safety Engine
+                  </p>
+                  <p className="mt-1 text-[8px] leading-4 text-white/60">
+                    {responseStep >= 1
+                      ? "AI emergency decision support is active and assisting the emergency workflow."
+                      : "AI emergency decision support is ready and will activate when an emergency response begins."}
+                  </p>
+                </div>
+
+                <span className="shrink-0 rounded-full border border-cyan-300/30 bg-cyan-400/10 px-2 py-1 text-[7px] font-black text-cyan-200">
+                  {responseStep >= 1 ? "ACTIVE" : "READY"}
+                </span>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setAiEngineOpen(false)}
+                className="mt-3 w-full rounded-xl border border-white/10 bg-white/[0.025] px-3 py-2 text-[8px] font-bold uppercase tracking-[0.12em] text-white/70 transition hover:bg-white/[0.06] active:scale-[0.99]"
+              >
+                CLOSE
+              </button>
+            </div>
+          </motion.div>
+        )}
+
+        {conciergeCardOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: -6, height: 0 }}
+            animate={{ opacity: 1, y: 0, height: "auto" }}
+            className="mt-2 overflow-hidden rounded-2xl border border-violet-300/25 bg-violet-400/[0.04] shadow-[0_0_20px_rgba(139,92,246,0.10)]"
+          >
+            <div className="p-3.5">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-violet-300/30 bg-violet-400/10 text-violet-300">
+                  <Headphones size={20} />
+                </div>
+
+                <div className="min-w-0 flex-1">
+                  <p className="text-[10px] font-bold text-white">
+                    Live Concierge
+                  </p>
+                  <p className="mt-1 text-[8px] leading-4 text-white/60">
+                    {responseStep >= 2
+                      ? "Your Personal Safety Concierge is connected and actively monitoring your emergency response."
+                      : "Your Personal Safety Concierge is online and ready to support you."}
+                  </p>
+                </div>
+
+                <span className="shrink-0 rounded-full border border-emerald-300/30 bg-emerald-400/10 px-2 py-1 text-[7px] font-black text-emerald-200">
+                  {responseStep >= 2 ? "CONNECTED" : "ONLINE"}
+                </span>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setConciergeCardOpen(false)}
+                className="mt-3 w-full rounded-xl border border-white/10 bg-white/[0.025] px-3 py-2 text-[8px] font-bold uppercase tracking-[0.12em] text-white/70 transition hover:bg-white/[0.06] active:scale-[0.99]"
+              >
+                CLOSE
+              </button>
+            </div>
+          </motion.div>
+        )}
+
+        {contactsCardOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: -6, height: 0 }}
+            animate={{ opacity: 1, y: 0, height: "auto" }}
+            className="mt-2 overflow-hidden rounded-2xl border border-orange-300/25 bg-orange-400/[0.04] shadow-[0_0_20px_rgba(251,146,60,0.10)]"
+          >
+            <div className="p-3.5">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-orange-300/30 bg-orange-400/10 text-orange-300">
+                  <Users size={20} />
+                </div>
+
+                <div className="min-w-0 flex-1">
+                  <p className="text-[10px] font-bold text-white">
+                    Emergency Contacts
+                  </p>
+                  <p className="mt-1 text-[8px] leading-4 text-white/60">
+                    {responseStep >= 3
+                      ? "Your emergency contacts have been notified as part of the active SOS response."
+                      : "Your emergency contacts are ready to be notified when SOS is activated."}
+                  </p>
+                </div>
+
+                <span className="shrink-0 rounded-full border border-orange-300/30 bg-orange-400/10 px-2 py-1 text-[7px] font-black text-orange-200">
+                  {responseStep >= 3 ? "NOTIFIED" : "READY"}
+                </span>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setContactsCardOpen(false)}
+                className="mt-3 w-full rounded-xl border border-white/10 bg-white/[0.025] px-3 py-2 text-[8px] font-bold uppercase tracking-[0.12em] text-white/70 transition hover:bg-white/[0.06] active:scale-[0.99]"
+              >
+                CLOSE
+              </button>
+            </div>
+          </motion.div>
+        )}
+
+        {evidenceVaultOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: -6, height: 0 }}
+            animate={{ opacity: 1, y: 0, height: "auto" }}
+            className="mt-2 overflow-hidden rounded-2xl border border-emerald-300/25 bg-emerald-400/[0.04] shadow-[0_0_20px_rgba(52,211,153,0.10)]"
+          >
+            <div className="p-3.5">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-emerald-300/30 bg-emerald-400/10 text-emerald-300">
+                  <LockKeyhole size={20} />
+                </div>
+
+                <div className="min-w-0 flex-1">
+                  <p className="text-[10px] font-bold text-white">
+                    Evidence Vault
+                  </p>
+                  <p className="mt-1 text-[8px] leading-4 text-white/60">
+                    {responseStep >= 4
+                      ? "Emergency evidence is actively protected and organized in the secure vault."
+                      : "Emergency evidence is securely protected and ready for the active response."}
+                  </p>
+                </div>
+
+                <span className="shrink-0 rounded-full border border-emerald-300/30 bg-emerald-400/10 px-2 py-1 text-[7px] font-black text-emerald-200">
+                  {responseStep >= 4 ? "ACTIVE" : "SECURED"}
+                </span>
+              </div>
+
+              <div className="mt-3 grid grid-cols-3 gap-1.5">
+                <div className="rounded-xl border border-white/[0.07] bg-black/20 px-2 py-2 text-center">
+                  <p className="text-[7px] font-bold text-white/70">PHOTO</p>
+                  <p className="mt-1 text-[7px] font-black text-emerald-300">
+                    {responseStep >= 1 ? "CAPTURING" : "READY"}
+                  </p>
+                </div>
+                <div className="rounded-xl border border-white/[0.07] bg-black/20 px-2 py-2 text-center">
+                  <p className="text-[7px] font-bold text-white/70">VIDEO</p>
+                  <p className="mt-1 text-[7px] font-black text-emerald-300">
+                    {responseStep >= 2 ? "RECORDING" : "READY"}
+                  </p>
+                </div>
+                <div className="rounded-xl border border-white/[0.07] bg-black/20 px-2 py-2 text-center">
+                  <p className="text-[7px] font-bold text-white/70">TIMELINE</p>
+                  <p className="mt-1 text-[7px] font-black text-emerald-300">
+                    {responseStep >= 4 ? "LIVE" : "AUTO"}
+                  </p>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setEvidenceVaultOpen(false)}
+                className="mt-3 w-full rounded-xl border border-white/10 bg-white/[0.025] px-3 py-2 text-[8px] font-bold uppercase tracking-[0.12em] text-white/70 transition hover:bg-white/[0.06] active:scale-[0.99]"
+              >
+                CLOSE
+              </button>
+            </div>
+          </motion.div>
+        )}
 
         {/* SYSTEM READINESS */}
         <SectionTitle title="SYSTEM READINESS" />
@@ -342,52 +541,234 @@ export default function SOSHome({
             label="PHOTO"
             value={activated ? "CAPTURING" : "READY"}
             tone="lime"
+            onClick={() => setPhotoReadyOpen((open) => !open)}
           />
           <ReadinessCard
             icon={<Video size={20} />}
             label="VIDEO"
             value={activated ? "RECORDING" : "READY"}
             tone="cyan"
+            onClick={() => setVideoReadyOpen((open) => !open)}
           />
           <ReadinessCard
             icon={<Mic size={20} />}
             label="AUDIO"
             value={activated ? "RECORDING" : "READY"}
             tone="pink"
+            onClick={() => setAudioReadyOpen((open) => !open)}
           />
           <ReadinessCard
             icon={<Clock3 size={20} />}
             label="TIMELINE"
             value={activated ? "LIVE" : "AUTO"}
             tone="yellow"
+            onClick={() => setTimelineReadyOpen((open) => !open)}
           />
           <ReadinessCard
             icon={<Headphones size={20} />}
             label="CONCIERGE"
             value={responseStep >= 2 ? "ACTIVE" : "ONLINE"}
             tone="purple"
+            onClick={() => setConciergeReadyOpen((open) => !open)}
           />
           <ReadinessCard
             icon={<MapPin size={20} />}
             label="LOCATION"
             value={activated ? "TRACKING" : "READY"}
             tone="orange"
-          />
+                      onClick={() => setLocationReadyOpen((open) => !open)}
+/>
           <ReadinessCard
             icon={<CloudUpload size={20} />}
             label="DATA SYNC"
             value={activated ? "LIVE" : "READY"}
             tone="teal"
-          />
+                      onClick={() => setDataSyncReadyOpen((open) => !open)}
+/>
           <ReadinessCard
             icon={<BellRing size={20} />}
             label="ALERTS"
             value={responseStep >= 3 ? "ACTIVE" : "READY"}
             tone="magenta"
-          />
+                      onClick={() => setAlertsReadyOpen((open) => !open)}
+/>
+        </div>
+
+        {photoReadyOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: -6, height: 0 }}
+            animate={{ opacity: 1, y: 0, height: "auto" }}
+            className="mt-2 overflow-hidden rounded-2xl border border-lime-300/25 bg-lime-400/[0.04] shadow-[0_0_20px_rgba(163,230,53,0.10)]"
+          >
+            <div className="p-3.5">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-lime-300/30 bg-lime-400/10 text-lime-300">
+                  <Camera size={20} />
+                </div>
+
+                <div className="min-w-0 flex-1">
+                  <p className="text-[10px] font-bold text-white">
+                    Photo Evidence
+                  </p>
+                  <p className="mt-1 text-[8px] leading-4 text-white/60">
+                    {activated
+                      ? "Photo evidence capture is active as part of the emergency workflow."
+                      : "Photo evidence capture is ready and will be available during an active emergency response."}
+                  </p>
+                </div>
+
+                <span className="shrink-0 rounded-full border border-lime-300/30 bg-lime-400/10 px-2 py-1 text-[7px] font-black text-lime-200">
+                  {activated ? "CAPTURING" : "READY"}
+                </span>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setPhotoReadyOpen(false)}
+                className="mt-3 w-full rounded-xl border border-white/10 bg-white/[0.025] px-3 py-2 text-[8px] font-bold uppercase tracking-[0.12em] text-white/70 transition hover:bg-white/[0.06] active:scale-[0.99]"
+              >
+                CLOSE
+              </button>
+            </div>
+          </motion.div>
+        )}
+
+        {videoReadyOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: -6, height: 0 }}
+            animate={{ opacity: 1, y: 0, height: "auto" }}
+            className="mt-2 overflow-hidden rounded-2xl border border-cyan-300/25 bg-cyan-400/[0.04] shadow-[0_0_20px_rgba(34,211,238,0.10)]"
+          >
+            <div className="p-3.5">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-cyan-300/30 bg-cyan-400/10 text-cyan-300">
+                  <Video size={20} />
+                </div>
+
+                <div className="min-w-0 flex-1">
+                  <p className="text-[10px] font-bold text-white">
+                    Video Evidence
+                  </p>
+                  <p className="mt-1 text-[8px] leading-4 text-white/60">
+                    {activated
+                      ? "Video recording is active as part of the emergency workflow."
+                      : "Video recording is ready and will be available during an active emergency response."}
+                  </p>
+                </div>
+
+                <span className="shrink-0 rounded-full border border-cyan-300/30 bg-cyan-400/10 px-2 py-1 text-[7px] font-black text-cyan-200">
+                  {activated ? "RECORDING" : "READY"}
+                </span>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setVideoReadyOpen(false)}
+                className="mt-3 w-full rounded-xl border border-white/10 bg-white/[0.025] px-3 py-2 text-[8px] font-bold uppercase tracking-[0.12em] text-white/70 transition hover:bg-white/[0.06] active:scale-[0.99]"
+              >
+                CLOSE
+              </button>
+            </div>
+          </motion.div>
+        )}
+
+        {audioReadyOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: -6, height: 0 }}
+            animate={{ opacity: 1, y: 0, height: "auto" }}
+            className="mt-2 overflow-hidden rounded-2xl border border-pink-300/25 bg-pink-400/[0.04] shadow-[0_0_20px_rgba(244,114,182,0.10)]"
+          >
+            <div className="p-3.5">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-pink-300/30 bg-pink-400/10 text-pink-300">
+                  <Mic size={20} />
+                </div>
+
+                <div className="min-w-0 flex-1">
+                  <p className="text-[10px] font-bold text-white">
+                    Audio Evidence
+                  </p>
+                  <p className="mt-1 text-[8px] leading-4 text-white/60">
+                    {activated
+                      ? "Audio recording is active as part of the emergency workflow."
+                      : "Audio recording is ready and will be available during an active emergency response."}
+                  </p>
+                </div>
+
+                <span className="shrink-0 rounded-full border border-pink-300/30 bg-pink-400/10 px-2 py-1 text-[7px] font-black text-pink-200">
+                  {activated ? "RECORDING" : "READY"}
+                </span>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setAudioReadyOpen(false)}
+                className="mt-3 w-full rounded-xl border border-white/10 bg-white/[0.025] px-3 py-2 text-[8px] font-bold uppercase tracking-[0.12em] text-white/70 transition hover:bg-white/[0.06] active:scale-[0.99]"
+              >
+                CLOSE
+              </button>
+            </div>
+          </motion.div>
+        )}
+
+        {timelineReadyOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: -6, height: 0 }}
+            animate={{ opacity: 1, y: 0, height: "auto" }}
+            className="mt-2 overflow-hidden rounded-2xl border border-yellow-300/25 bg-yellow-400/[0.04] shadow-[0_0_20px_rgba(253,224,71,0.10)]"
+          >
+            <div className="p-3.5">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-yellow-300/30 bg-yellow-400/10 text-yellow-300">
+                  <Clock3 size={20} />
+                </div>
+
+                <div className="min-w-0 flex-1">
+                  <p className="text-[10px] font-bold text-white">
+                    Incident Timeline
+                  </p>
+                  <p className="mt-1 text-[8px] leading-4 text-white/60">
+                    {activated
+                      ? "The incident timeline is live and automatically logging the emergency response."
+                      : "The incident timeline is ready to automatically log the emergency response."}
+                  </p>
+                </div>
+
+                <span className="shrink-0 rounded-full border border-yellow-300/30 bg-yellow-400/10 px-2 py-1 text-[7px] font-black text-yellow-200">
+                  {activated ? "LIVE" : "AUTO"}
+                </span>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setTimelineReadyOpen(false)}
+                className="mt-3 w-full rounded-xl border border-white/10 bg-white/[0.025] px-3 py-2 text-[8px] font-bold uppercase tracking-[0.12em] text-white/70 transition hover:bg-white/[0.06] active:scale-[0.99]"
+              >
+                CLOSE
+              </button>
+            </div>
+          </motion.div>
+        )}
+
+        <div className="mt-2 space-y-2">
+          {conciergeReadyOpen && (
+            <ReadinessInfoPanel icon={<Headphones size={20} />} title="Live Concierge" value={activated ? "CONNECTED" : "ONLINE"} message={activated ? "Your Personal Safety Concierge is connected and supporting the emergency response." : "Your Personal Safety Concierge is online and ready to support you."} tone="violet" onClose={() => setConciergeReadyOpen(false)} />
+          )}
+          {locationReadyOpen && (
+            <ReadinessInfoPanel icon={<MapPin size={20} />} title="Live Location" value={activated ? "TRACKING" : "READY"} message={activated ? "Your live location is being maintained as part of the emergency response." : "Location sharing is ready for the emergency response."} tone="blue" onClose={() => setLocationReadyOpen(false)} />
+          )}
+          {dataSyncReadyOpen && (
+            <ReadinessInfoPanel icon={<CloudUpload size={20} />} title="Data Sync" value={activated ? "LIVE" : "READY"} message={activated ? "Emergency response data is actively synchronizing." : "Emergency response data is ready to synchronize securely."} tone="teal" onClose={() => setDataSyncReadyOpen(false)} />
+          )}
+          {alertsReadyOpen && (
+            <ReadinessInfoPanel icon={<BellRing size={20} />} title="Alerts" value={responseStep >= 3 ? "ACTIVE" : "READY"} message={responseStep >= 3 ? "Emergency alerts are active in the response workflow." : "Emergency alerts are ready to activate when required."} tone="magenta" onClose={() => setAlertsReadyOpen(false)} />
+          )}
         </div>
 
         {/* LIVE CONCIERGE MONITORING */}
+        <SectionTitle title="LIVE CONCIERGE MONITORING" />        {/* LIVE CONCIERGE MONITORING */}
+        <SectionTitle title="LIVE CONCIERGE MONITORING" />        {/* LIVE CONCIERGE MONITORING */}
+        <SectionTitle title="LIVE CONCIERGE MONITORING" />        {/* LIVE CONCIERGE MONITORING */}
         <SectionTitle title="LIVE CONCIERGE MONITORING" />
 
         <div
@@ -469,16 +850,19 @@ export default function SOSHome({
                 label="HUMAN SUPPORT"
                 value={responseStep >= 2 ? "ACTIVE" : "READY"}
                 active={responseStep >= 2}
+                onClick={() => setHumanSupportOpen((open) => !open)}
               />
               <ConciergeStatus
                 label="5 CONTACTS"
                 value={responseStep >= 3 ? "NOTIFIED" : "READY"}
                 active={responseStep >= 3}
+                onClick={() => setContactsStatusOpen((open) => !open)}
               />
               <ConciergeStatus
                 label="MONITORING"
                 value={responseStep >= 2 ? "LIVE" : "STANDBY"}
                 active={responseStep >= 2}
+                onClick={() => setMonitoringStatusOpen((open) => !open)}
               />
             </div>
 
@@ -495,17 +879,23 @@ export default function SOSHome({
             </button>
 
             {conciergeOpen && (
-              <motion.div
+              <motion.button
+                type="button"
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: "auto" }}
-                className="mt-3 overflow-hidden rounded-xl border border-white/[0.07] bg-black/20 p-3"
+                onClick={() => setConciergeConnectionOpen((open) => !open)}
+                className={`mt-3 w-full overflow-hidden rounded-xl border bg-black/20 p-3 text-left transition-all active:scale-[0.99] ${
+                  conciergeConnectionOpen
+                    ? "border-violet-300/40 bg-violet-400/[0.06]"
+                    : "border-white/[0.07] hover:bg-white/[0.035]"
+                }`}
               >
                 <div className="flex items-start gap-2.5">
                   <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-violet-400/10 text-violet-300">
                     <Headphones size={14} />
                   </div>
 
-                  <div>
+                  <div className="min-w-0 flex-1">
                     <p className="text-[10px] font-bold text-white">
                       Concierge connection
                     </p>
@@ -515,11 +905,79 @@ export default function SOSHome({
                         : "Ready to connect when an emergency response begins."}
                     </p>
                   </div>
+                  <span className="shrink-0 rounded-full border border-violet-300/20 bg-violet-400/[0.06] px-2 py-1 text-[7px] font-black text-violet-200">
+                    {conciergeConnectionOpen ? "OPEN" : "VIEW"}
+                  </span>
                 </div>
-              </motion.div>
+              </motion.button>
             )}
           </div>
         </div>
+
+        {(humanSupportOpen || contactsStatusOpen || monitoringStatusOpen || conciergeConnectionOpen) && (
+          <motion.div
+            initial={{ opacity: 0, y: -6, height: 0 }}
+            animate={{ opacity: 1, y: 0, height: "auto" }}
+            className="mt-2 overflow-hidden rounded-2xl border border-violet-300/20 bg-violet-400/[0.035]"
+          >
+            <div className="p-3.5">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-violet-300/25 bg-violet-400/10 text-violet-300">
+                  <Headphones size={20} />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-[10px] font-bold text-white">
+                    {humanSupportOpen
+                      ? "Human Support"
+                      : contactsStatusOpen
+                        ? "Emergency Contacts"
+                        : monitoringStatusOpen
+                          ? "Concierge Monitoring"
+                          : "Concierge Connection"}
+                  </p>
+                  <p className="mt-1 text-[8px] leading-4 text-white/60">
+                    {humanSupportOpen
+                      ? responseStep >= 2
+                        ? "A real human Concierge is actively supporting your emergency response."
+                        : "Human Concierge support is ready to connect when an emergency begins."
+                      : contactsStatusOpen
+                        ? responseStep >= 3
+                          ? "Your emergency contacts have been notified."
+                          : "Your emergency contacts are ready to be notified."
+                        : monitoringStatusOpen
+                          ? responseStep >= 2
+                            ? "Live Concierge monitoring is active."
+                            : "Concierge monitoring is standing by."
+                          : responseStep >= 2
+                            ? "The Concierge is connected and monitoring the active safety workflow."
+                            : "The Concierge connection is ready for an emergency response."}
+                  </p>
+                </div>
+                <span className="shrink-0 rounded-full border border-violet-300/25 bg-violet-400/[0.06] px-2 py-1 text-[7px] font-black text-violet-200">
+                  {humanSupportOpen
+                    ? responseStep >= 2 ? "ACTIVE" : "READY"
+                    : contactsStatusOpen
+                      ? responseStep >= 3 ? "NOTIFIED" : "READY"
+                      : monitoringStatusOpen
+                        ? responseStep >= 2 ? "LIVE" : "STANDBY"
+                        : responseStep >= 2 ? "CONNECTED" : "READY"}
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setHumanSupportOpen(false);
+                  setContactsStatusOpen(false);
+                  setMonitoringStatusOpen(false);
+                  setConciergeConnectionOpen(false);
+                }}
+                className="mt-3 w-full rounded-xl border border-white/10 bg-white/[0.025] px-3 py-2 text-[8px] font-bold uppercase tracking-[0.12em] text-white/70 transition hover:bg-white/[0.06] active:scale-[0.99]"
+              >
+                CLOSE
+              </button>
+            </div>
+          </motion.div>
+        )}
 
         {/* WORKFLOW */}
         <SectionTitle title="EMERGENCY WORKFLOW STATUS" />
@@ -532,7 +990,8 @@ export default function SOSHome({
             value={responseStep >= 1 ? "CAPTURING" : "READY"}
             tone="violet"
             active={responseStep >= 1}
-          />
+                      onClick={() => setWorkflowOpen((value) => value === "photo" ? null : "photo")}
+/>
           <WorkflowRow
             icon={<Video size={18} />}
             label="Video Recording"
@@ -540,7 +999,8 @@ export default function SOSHome({
             value={responseStep >= 2 ? "RECORDING" : "READY"}
             tone="red"
             active={responseStep >= 2}
-          />
+                      onClick={() => setWorkflowOpen((value) => value === "video" ? null : "video")}
+/>
           <WorkflowRow
             icon={<Mic size={18} />}
             label="Audio Recording"
@@ -548,7 +1008,8 @@ export default function SOSHome({
             value={responseStep >= 3 ? "RECORDING" : "READY"}
             tone="orange"
             active={responseStep >= 3}
-          />
+                      onClick={() => setWorkflowOpen((value) => value === "audio" ? null : "audio")}
+/>
           <WorkflowRow
             icon={<Clock3 size={18} />}
             label="Incident Timeline"
@@ -556,7 +1017,8 @@ export default function SOSHome({
             value={responseStep >= 4 ? "LIVE" : "AUTOMATIC"}
             tone="cyan"
             active={responseStep >= 4}
-          />
+                      onClick={() => setWorkflowOpen((value) => value === "timeline" ? null : "timeline")}
+/>
           <WorkflowRow
             icon={<UserRound size={18} />}
             label="Concierge Emergency Monitoring"
@@ -565,35 +1027,138 @@ export default function SOSHome({
             tone="red"
             active={responseStep >= 2}
             last
-          />
+                      onClick={() => setWorkflowOpen((value) => value === "concierge" ? null : "concierge")}
+/>
         </div>
 
+        {workflowOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: -6, height: 0 }}
+            animate={{ opacity: 1, y: 0, height: "auto" }}
+            className="mt-2 overflow-hidden rounded-2xl border border-red-400/20 bg-[#071122] shadow-[0_0_20px_rgba(239,68,68,0.08)]"
+          >
+            <div className="p-3.5">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-red-400/20 bg-red-400/10 text-red-300">
+                  {workflowOpen === "photo" && <Camera size={19} />}
+                  {workflowOpen === "video" && <Video size={19} />}
+                  {workflowOpen === "audio" && <Mic size={19} />}
+                  {workflowOpen === "timeline" && <Clock3 size={19} />}
+                  {workflowOpen === "concierge" && <UserRound size={19} />}
+                </div>
+
+                <div className="min-w-0 flex-1">
+                  <p className="text-[10px] font-bold text-white">
+                    {workflowOpen === "photo" && "Photo Evidence"}
+                    {workflowOpen === "video" && "Video Recording"}
+                    {workflowOpen === "audio" && "Audio Recording"}
+                    {workflowOpen === "timeline" && "Incident Timeline"}
+                    {workflowOpen === "concierge" && "Concierge Emergency Monitoring"}
+                  </p>
+                  <p className="mt-1 text-[8px] leading-4 text-white/55">
+                    {workflowOpen === "photo" && (activated ? "Photo evidence capture is active." : "Photo evidence capture is ready.")}
+                    {workflowOpen === "video" && (activated ? "Video recording is active." : "Video recording is ready.")}
+                    {workflowOpen === "audio" && (activated ? "Audio recording is active." : "Audio recording is ready.")}
+                    {workflowOpen === "timeline" && (activated ? "The incident timeline is actively logging the emergency response." : "The incident timeline is ready for automatic logging.")}
+                    {workflowOpen === "concierge" && (activated ? "Your Personal Safety Concierge is actively monitoring the emergency response." : "Your Personal Safety Concierge is standing by and ready to support you.")}
+                  </p>
+                </div>
+
+                <span className="shrink-0 rounded-full border border-emerald-300/20 bg-emerald-400/10 px-2 py-1 text-[7px] font-black text-emerald-200">
+                  {workflowOpen === "photo" && (activated ? "CAPTURING" : "READY")}
+                  {workflowOpen === "video" && (activated ? "RECORDING" : "READY")}
+                  {workflowOpen === "audio" && (activated ? "RECORDING" : "READY")}
+                  {workflowOpen === "timeline" && (activated ? "LIVE" : "AUTOMATIC")}
+                  {workflowOpen === "concierge" && (activated ? "ACTIVE" : "STANDBY")}
+                </span>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setWorkflowOpen(null)}
+                className="mt-3 w-full rounded-xl border border-white/10 bg-white/[0.025] px-3 py-2 text-[8px] font-bold uppercase tracking-[0.12em] text-white/70 transition hover:bg-white/[0.06] active:scale-[0.99]"
+              >
+                CLOSE
+              </button>
+            </div>
+          </motion.div>
+        )}
+
         {/* HELP BANNER */}
-        <div className={`relative mt-3 flex items-center gap-3 overflow-hidden rounded-2xl border px-3 py-3 transition-all duration-700 ${
+        <div
+          role="button"
+          tabIndex={0}
+          onClick={() => setConciergeBannerOpen((open) => !open)}
+          onKeyDown={(event) => {
+            if (event.key === "Enter" || event.key === " ") {
+              event.preventDefault();
+              setConciergeBannerOpen((open) => !open);
+            }
+          }}
+          className={`relative mt-3 cursor-pointer overflow-hidden rounded-2xl border px-3 py-3 transition-all duration-700 active:scale-[0.995] ${
             activated
               ? "border-red-400/70 bg-red-500/[0.08] shadow-[0_0_35px_rgba(239,68,68,0.24)]"
               : "border-red-500/35 bg-[#071122] shadow-[0_0_20px_rgba(239,68,68,0.10)]"
-          }`}>
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-red-400/30 bg-red-500/10">
-            <ShieldCheck size={22} className="text-red-400" />
-          </div>
+          }`}
+        >
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-red-400/30 bg-red-500/10">
+              <ShieldCheck size={22} className="text-red-400" />
+            </div>
 
-          <div className="min-w-0 flex-1">
-            <p className="text-[11px] font-bold uppercase tracking-[0.05em] text-red-400">
-              {activated ? "STAY CALM, WE ARE WITH YOU" : "CONCIERGE READY"}
-            </p>
-            <p className="mt-1 text-[9px] leading-4 text-white/55">
-              {activated
-                ? "Stay calm. Your SWM safety support is active."
-                : "Your Personal Safety Concierge is standing by."}
-            </p>
-          </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-[11px] font-bold uppercase tracking-[0.05em] text-red-400">
+                {activated ? "STAY CALM, WE ARE WITH YOU" : "CONCIERGE READY"}
+              </p>
+              <p className="mt-1 text-[9px] leading-4 text-white/55">
+                {activated
+                  ? "Stay calm. Your SWM safety support is active."
+                  : "Your Personal Safety Concierge is standing by."}
+              </p>
+            </div>
 
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-red-400/50 bg-[#0a1626] shadow-[0_0_16px_rgba(239,68,68,0.18)]">
-            <Headphones size={21} className="text-violet-300" />
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-red-400/50 bg-[#0a1626] shadow-[0_0_16px_rgba(239,68,68,0.18)]">
+              <Headphones size={21} className="text-violet-300" />
+            </div>
           </div>
 
           <span className="absolute bottom-2 right-3 h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_9px_rgba(52,211,153,0.8)]" />
+
+          {conciergeBannerOpen && (
+            <motion.div
+              initial={{ opacity: 0, height: 0, y: 4 }}
+              animate={{ opacity: 1, height: "auto", y: 0 }}
+              className="mt-3 overflow-hidden rounded-xl border border-violet-300/20 bg-violet-400/[0.04]"
+              onClick={(event) => event.stopPropagation()}
+            >
+              <div className="p-3">
+                <div className="flex items-center gap-3">
+                  <Headphones size={18} className="shrink-0 text-violet-300" />
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[9px] font-bold text-white">
+                      Personal Safety Concierge
+                    </p>
+                    <p className="mt-1 text-[7px] leading-4 text-white/55">
+                      {activated
+                        ? "Live human safety support is active."
+                        : "Your Personal Safety Concierge is online and standing by."}
+                    </p>
+                  </div>
+                  <span className="rounded-full border border-emerald-300/20 bg-emerald-400/10 px-2 py-1 text-[7px] font-black text-emerald-200">
+                    {activated ? "ACTIVE" : "READY"}
+                  </span>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setConciergeBannerOpen(false)}
+                  className="mt-3 w-full rounded-xl border border-white/10 bg-white/[0.025] px-3 py-2 text-[8px] font-bold uppercase tracking-[0.12em] text-white/70"
+                >
+                  CLOSE
+                </button>
+              </div>
+            </motion.div>
+          )}
         </div>
 
       </div>
@@ -645,12 +1210,14 @@ function NetworkCard({
   status,
   tone,
   active = false,
+  onClick,
 }: {
   icon: React.ReactNode;
   title: string;
   status: string;
   tone: "cyan" | "violet" | "orange" | "green";
   active?: boolean;
+  onClick?: () => void;
 }) {
   const tones = {
     cyan: "border-cyan-400/25 bg-cyan-400/[0.05] text-cyan-300",
@@ -686,6 +1253,20 @@ function NetworkCard({
 
   return (
     <motion.div
+      role={onClick ? "button" : undefined}
+      tabIndex={onClick ? 0 : undefined}
+      onClick={onClick}
+      onKeyDown={
+        onClick
+          ? (event) => {
+              if (event.key === "Enter" || event.key === " ") {
+                event.preventDefault();
+                onClick();
+              }
+            }
+          : undefined
+      }
+      className={`cursor-pointer relative min-w-0 overflow-hidden rounded-xl border px-1.5 py-3 text-center transition-all duration-500 ${active ? `${activeGlow[tone]} bg-white/[0.09]` : tones[tone]}`}
       animate={
         active
           ? {
@@ -699,11 +1280,6 @@ function NetworkCard({
           ? { duration: 0.65, repeat: 2, ease: "easeInOut" }
           : { duration: 0.2 }
       }
-      className={`relative min-w-0 overflow-hidden rounded-xl border px-1.5 py-3 text-center transition-all duration-500 ${
-        active
-          ? `${activeGlow[tone]} bg-white/[0.09]`
-          : tones[tone]
-      }`}
     >
       {active && (
         <>
@@ -768,11 +1344,45 @@ function NetworkCard({
     </motion.div>
   );
 }
+function ReadinessInfoPanel({
+  icon, title, value, message, tone, onClose,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  value: string;
+  message: string;
+  tone: "violet" | "blue" | "teal" | "magenta";
+  onClose: () => void;
+}) {
+  const tones = {
+    violet: "border-violet-300/25 bg-violet-400/[0.04] text-violet-300",
+    blue: "border-blue-300/25 bg-blue-400/[0.04] text-blue-300",
+    teal: "border-teal-300/25 bg-teal-400/[0.04] text-teal-300",
+    magenta: "border-fuchsia-300/25 bg-fuchsia-400/[0.04] text-fuchsia-300",
+  };
+  return (
+    <motion.div initial={{ opacity: 0, y: -6, height: 0 }} animate={{ opacity: 1, y: 0, height: "auto" }} className={`overflow-hidden rounded-2xl border ${tones[tone]}`}>
+      <div className="p-3.5">
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/[0.04]">{icon}</div>
+          <div className="min-w-0 flex-1">
+            <p className="text-[10px] font-bold text-white">{title}</p>
+            <p className="mt-1 text-[8px] leading-4 text-white/60">{message}</p>
+          </div>
+          <span className="shrink-0 rounded-full border border-white/10 bg-white/[0.04] px-2 py-1 text-[7px] font-black text-white/75">{value}</span>
+        </div>
+        <button type="button" onClick={onClose} className="mt-3 w-full rounded-xl border border-white/10 bg-white/[0.025] px-3 py-2 text-[8px] font-bold uppercase tracking-[0.12em] text-white/70 transition hover:bg-white/[0.06] active:scale-[0.99]">CLOSE</button>
+      </div>
+    </motion.div>
+  );
+}
+
 function ReadinessCard({
   icon,
   label,
   value,
   tone,
+  onClick,
 }: {
   icon: React.ReactNode;
   label: string;
@@ -786,6 +1396,7 @@ function ReadinessCard({
     | "orange"
     | "teal"
     | "magenta";
+  onClick?: () => void;
 }) {
   const tones = {
     lime:
@@ -808,7 +1419,22 @@ function ReadinessCard({
 
   return (
     <div
-      className={`min-w-0 rounded-xl border bg-black/20 px-1 py-3 text-center transition-all duration-500 ${tones[tone]}`}
+      role={onClick ? "button" : undefined}
+      tabIndex={onClick ? 0 : undefined}
+      onClick={onClick}
+      onKeyDown={
+        onClick
+          ? (event) => {
+              if (event.key === "Enter" || event.key === " ") {
+                event.preventDefault();
+                onClick();
+              }
+            }
+          : undefined
+      }
+      className={`min-w-0 rounded-xl border bg-black/20 px-1 py-3 text-center transition-all duration-500 ${tones[tone]} ${
+        onClick ? "cursor-pointer active:scale-[0.98]" : ""
+      }`}
     >
       <div className="flex justify-center drop-shadow-[0_0_7px_currentColor]">
         {icon}
@@ -833,20 +1459,24 @@ function ConciergeStatus({
   label,
   value,
   active,
+  onClick,
 }: {
   label: string;
   value: string;
   active: boolean;
+  onClick?: () => void;
 }) {
   return (
-    <motion.div
+    <motion.button
+      type="button"
+      onClick={onClick}
       animate={active ? { scale: [1, 1.035, 1] } : { scale: 1 }}
       transition={{ duration: 1.2, repeat: active ? Infinity : 0, ease: "easeInOut" }}
       className={`rounded-xl border px-2 py-2 text-center transition-all duration-500 ${
         active
           ? "border-fuchsia-300/55 bg-fuchsia-400/[0.08] shadow-[0_0_18px_rgba(217,70,239,0.28),inset_0_0_16px_rgba(167,139,250,0.10)]"
           : "border-white/[0.06] bg-white/[0.02]"
-      }`}
+      } ${onClick ? "cursor-pointer active:scale-[0.98]" : ""}`}
     >
       <p className="truncate text-[7px] font-bold text-white/80">{label}</p>
       <div className="mt-1 flex items-center justify-center gap-1">
@@ -865,7 +1495,7 @@ function ConciergeStatus({
           {value}
         </p>
       </div>
-    </motion.div>
+    </motion.button>
   );
 }
 
@@ -877,6 +1507,7 @@ function WorkflowRow({
   tone,
   active = false,
   last,
+  onClick,
 }: {
   icon: React.ReactNode;
   label: string;
@@ -885,6 +1516,7 @@ function WorkflowRow({
   tone: "cyan" | "violet" | "orange" | "red";
   active?: boolean;
   last?: boolean;
+  onClick?: () => void;
 }) {
   const tones = {
     cyan: "text-cyan-300",
@@ -912,9 +1544,22 @@ function WorkflowRow({
           ? { duration: 0.55, ease: "easeOut" }
           : { duration: 0.2 }
       }
+      role={onClick ? "button" : undefined}
+      tabIndex={onClick ? 0 : undefined}
+      onClick={onClick}
+      onKeyDown={
+        onClick
+          ? (event) => {
+              if (event.key === "Enter" || event.key === " ") {
+                event.preventDefault();
+                onClick();
+              }
+            }
+          : undefined
+      }
       className={`relative flex items-center gap-2.5 px-3 py-2.5 transition-all duration-500 ${
         last ? "" : "border-b border-white/[0.06]"
-      } ${active ? activeBg[tone] : ""}`}
+      } ${active ? activeBg[tone] : ""} ${onClick ? "cursor-pointer active:bg-white/[0.06]" : ""}`}
     >
       {active && (
         <motion.div

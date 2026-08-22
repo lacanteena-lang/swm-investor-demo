@@ -14,7 +14,6 @@ import {
 } from "lucide-react";
 
 import GlassCard from "../ui/GlassCard";
-import { supabase } from "../../lib/supabase";
 
 type SafetyItem = {
   icon: typeof Droplets;
@@ -68,6 +67,14 @@ export default function SafetyProfile() {
   const [selectedItem, setSelectedItem] = useState<string | null>(null);
 
   const [bloodGroup, setBloodGroup] = useState("");
+
+  // Restore the saved blood group when the profile is opened again.
+  useEffect(() => {
+    const savedBloodGroup = window.localStorage.getItem("swm-blood-group");
+    if (savedBloodGroup) {
+      setBloodGroup(savedBloodGroup);
+    }
+  }, []);
   const [medicalInfo, setMedicalInfo] = useState("");
 
   const [contacts, setContacts] = useState<EmergencyContact[]>(
@@ -93,179 +100,6 @@ export default function SafetyProfile() {
     pinCode: "",
   });
 
-  // Load the user's safety profile from Supabase when the screen opens.
-  useEffect(() => {
-    let cancelled = false;
-
-    const loadSafetyProfile = async () => {
-      try {
-        let { data: userData } = await supabase.auth.getUser();
-        let user = userData.user;
-
-        // Anonymous auth is enabled for this project. If there is no
-        // existing session, create one so the safety profile can be saved.
-        if (!user) {
-          const { data: anonymousData, error: anonymousError } =
-            await supabase.auth.signInAnonymously();
-
-          if (anonymousError) throw anonymousError;
-          user = anonymousData.user;
-        }
-
-        if (!user || cancelled) return;
-
-        // Ensure the public profile row exists before inserting the
-        // safety profile because safety_profiles.user_id references it.
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("id")
-          .eq("id", user.id)
-          .maybeSingle();
-
-        if (!profile) {
-          const { error: profileError } = await supabase.from("profiles").insert({
-            id: user.id,
-            selected_plan: "free",
-          });
-
-          if (profileError && profileError.code !== "23505") {
-            throw profileError;
-          }
-        }
-
-        const [{ data: safetyProfile, error: safetyError }, { data: emergencyContacts, error: contactsError }] =
-          await Promise.all([
-            supabase
-              .from("safety_profiles")
-              .select("blood_group, medical_info, address_line, city, state, pin_code")
-              .eq("user_id", user.id)
-              .maybeSingle(),
-            supabase
-              .from("emergency_contacts")
-              .select("name, relationship, phone")
-              .eq("user_id", user.id),
-          ]);
-
-        if (safetyError) throw safetyError;
-        if (contactsError) throw contactsError;
-        if (cancelled) return;
-
-        if (safetyProfile) {
-          setBloodGroup(safetyProfile.blood_group ?? "");
-          setMedicalInfo(safetyProfile.medical_info ?? "");
-          setAddress({
-            addressLine: safetyProfile.address_line ?? "",
-            city: safetyProfile.city ?? "",
-            state: safetyProfile.state ?? "",
-            pinCode: safetyProfile.pin_code ?? "",
-          });
-          setAddressForm({
-            addressLine: safetyProfile.address_line ?? "",
-            city: safetyProfile.city ?? "",
-            state: safetyProfile.state ?? "",
-            pinCode: safetyProfile.pin_code ?? "",
-          });
-        }
-
-        const loadedContacts = (emergencyContacts ?? [])
-          .slice(0, 5)
-          .map((contact) => ({
-            name: contact.name ?? "",
-            relationship: contact.relationship ?? "",
-            phone: contact.phone ?? "",
-          }));
-
-        setContacts([
-          ...loadedContacts,
-          ...Array.from(
-            { length: Math.max(0, 5 - loadedContacts.length) },
-            () => emptyContact()
-          ),
-        ]);
-      } catch (error) {
-        console.error("Unable to load safety profile:", JSON.stringify(error, null, 2));
-      }
-    };
-
-    loadSafetyProfile();
-
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  const getCurrentUser = async () => {
-    let { data } = await supabase.auth.getUser();
-
-    if (!data.user) {
-      const { data: anonymousData, error } =
-        await supabase.auth.signInAnonymously();
-
-      if (error) throw error;
-      return anonymousData.user;
-    }
-
-    return data.user;
-  };
-
-  const saveSafetyProfile = async (values: {
-    bloodGroup: string;
-    medicalInfo: string;
-    address: Address;
-  }) => {
-    const user = await getCurrentUser();
-    if (!user) throw new Error("No authenticated user.");
-
-    const { error } = await supabase.from("safety_profiles").upsert(
-      {
-        user_id: user.id,
-        blood_group: values.bloodGroup || null,
-        medical_info: values.medicalInfo || null,
-        address_line: values.address.addressLine || null,
-        city: values.address.city || null,
-        state: values.address.state || null,
-        pin_code: values.address.pinCode || null,
-      },
-      { onConflict: "user_id" }
-    );
-
-    if (error) throw error;
-  };
-
-  const saveEmergencyContacts = async (nextContacts: EmergencyContact[]) => {
-    const user = await getCurrentUser();
-    if (!user) throw new Error("No authenticated user.");
-
-    const { error: deleteError } = await supabase
-      .from("emergency_contacts")
-      .delete()
-      .eq("user_id", user.id);
-
-    if (deleteError) throw deleteError;
-
-    const validContacts = nextContacts.filter(
-      (contact) =>
-        contact.name.trim() &&
-        contact.relationship.trim() &&
-        contact.phone.trim()
-    );
-
-    if (!validContacts.length) return;
-
-    const { error: insertError } = await supabase
-      .from("emergency_contacts")
-      .insert(
-        validContacts.map((contact) => ({
-          user_id: user.id,
-          name: contact.name.trim(),
-          relationship: contact.relationship.trim(),
-          phone: contact.phone.trim(),
-        }))
-      );
-
-    if (insertError) throw insertError;
-  };
-
   const openItem = (label: string) => {
     if (label === "Home Address") {
       setAddressForm({ ...address });
@@ -279,35 +113,16 @@ export default function SafetyProfile() {
     setEditingContact(null);
   };
 
-  const selectBloodGroup = async (group: string) => {
-    try {
-      await saveSafetyProfile({
-        bloodGroup: group,
-        medicalInfo,
-        address,
-      });
-
-      setBloodGroup(group);
-      setSelectedItem(null);
-    } catch (error) {
-      console.error("Unable to save blood group:", JSON.stringify(error, null, 2));
-    }
+  const selectBloodGroup = (group: string) => {
+    setBloodGroup(group);
+    window.localStorage.setItem("swm-blood-group", group);
+    setSelectedItem(null);
   };
 
-  const saveMedicalInfo = async () => {
+  const saveMedicalInfo = () => {
     if (!medicalInfo.trim()) return;
 
-    try {
-      await saveSafetyProfile({
-        bloodGroup,
-        medicalInfo,
-        address,
-      });
-
-      setSelectedItem(null);
-    } catch (error) {
-      console.error("Unable to save medical information:", error);
-    }
+    setSelectedItem(null);
   };
 
   const openContactEditor = (index: number) => {
@@ -320,7 +135,7 @@ export default function SafetyProfile() {
     setContactForm(emptyContact());
   };
 
-  const saveContact = async () => {
+  const saveContact = () => {
     if (
       !contactForm.name.trim() ||
       !contactForm.relationship.trim() ||
@@ -329,16 +144,13 @@ export default function SafetyProfile() {
       return;
     }
 
-    const updated = [...contacts];
-    updated[editingContact ?? 0] = { ...contactForm };
+    setContacts((current) => {
+      const updated = [...current];
+      updated[editingContact ?? 0] = { ...contactForm };
+      return updated;
+    });
 
-    try {
-      await saveEmergencyContacts(updated);
-      setContacts(updated);
-      closeContactEditor();
-    } catch (error) {
-      console.error("Unable to save emergency contact:", error);
-    }
+    closeContactEditor();
   };
 
   const contactCount = contacts.filter(
@@ -348,7 +160,7 @@ export default function SafetyProfile() {
       contact.phone.trim()
   ).length;
 
-  const saveAddress = async () => {
+  const saveAddress = () => {
     if (
       !addressForm.addressLine.trim() ||
       !addressForm.city.trim() ||
@@ -358,18 +170,8 @@ export default function SafetyProfile() {
       return;
     }
 
-    try {
-      await saveSafetyProfile({
-        bloodGroup,
-        medicalInfo,
-        address: addressForm,
-      });
-
-      setAddress({ ...addressForm });
-      setSelectedItem(null);
-    } catch (error) {
-      console.error("Unable to save home address:", error);
-    }
+    setAddress({ ...addressForm });
+    setSelectedItem(null);
   };
 
   const addressAdded =

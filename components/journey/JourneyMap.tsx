@@ -1,8 +1,9 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { useState } from "react";
 
-import { Activity, ShieldCheck, Signal } from "lucide-react";
+import { Activity, ShieldCheck, Signal, X } from "lucide-react";
 import GlassCard from "../ui/GlassCard";
 
 type JourneyMapProps = {
@@ -10,7 +11,13 @@ type JourneyMapProps = {
 };
 
 export default function JourneyMap({ setActiveTab }: JourneyMapProps) {
+  const [showLiveStatus, setShowLiveStatus] = useState(false);
+  const [showLocationStatus, setShowLocationStatus] = useState(false);
+  const [showSafetyTip, setShowSafetyTip] = useState(false);
+  const [mapZoom, setMapZoom] = useState(1);
+
   return (
+    <>
     <GlassCard className="w-full max-w-full overflow-hidden p-3 sm:p-4">
       <div className="w-full min-w-0">
         {/* STEP 1 — SEALED HEADER ONLY */}
@@ -92,7 +99,9 @@ export default function JourneyMap({ setActiveTab }: JourneyMapProps) {
 
           <button
             type="button"
-            className="my-2 mr-2 flex shrink-0 items-center justify-center rounded-xl bg-rose-600 px-3 text-[10px] font-bold text-white drop-shadow-[0_0_7px_rgba(255,255,255,0.50)] shadow-[0_0_18px_rgba(225,29,72,0.32)] transition active:scale-95"
+            onClick={() => setShowLiveStatus(true)}
+            aria-label="Live journey status"
+            className="my-2 mr-2 flex shrink-0 items-center justify-center rounded-xl bg-rose-600 px-3 text-[10px] font-bold text-white drop-shadow-[0_0_7px_rgba(255,255,255,0.50)] shadow-[0_0_18px_rgba(225,29,72,0.32)] transition hover:brightness-110 active:scale-95"
           >
             LIVE
           </button>
@@ -101,6 +110,10 @@ export default function JourneyMap({ setActiveTab }: JourneyMapProps) {
         {/* STEP 3 — MAP AREA ONLY */}
 
         <div className="relative mt-3 h-[430px] w-full min-w-0 overflow-hidden rounded-[18px] border border-slate-600/35 bg-[#020a17]">
+          <div
+            className="absolute inset-0 origin-center transition-transform duration-300 ease-out"
+            style={{ transform: `scale(${mapZoom})` }}
+          >
           {/* Subtle glowing grid */}
           <div
             className="pointer-events-none absolute inset-0 opacity-35"
@@ -330,11 +343,19 @@ export default function JourneyMap({ setActiveTab }: JourneyMapProps) {
             </g>
           </svg>
 
+          </div>
+
           {/* Map controls */}
           <div className="absolute bottom-4 right-3 z-40 flex flex-col gap-2">
-            <MapButton symbol="⊙" onClick={() => setActiveTab("journey")} />
-            <MapButton symbol="+" onClick={() => setActiveTab("journey")} />
-            <MapButton symbol="−" onClick={() => setActiveTab("journey")} />
+            <MapButton symbol="⊙" onClick={() => setShowLocationStatus(true)} />
+            <MapButton
+              symbol="+"
+              onClick={() => setMapZoom((zoom) => Math.min(1.3, Number((zoom + 0.1).toFixed(2))))}
+            />
+            <MapButton
+              symbol="−"
+              onClick={() => setMapZoom((zoom) => Math.max(0.85, Number((zoom - 0.1).toFixed(2))))}
+            />
           </div>
         </div>
 
@@ -428,10 +449,13 @@ export default function JourneyMap({ setActiveTab }: JourneyMapProps) {
         </div>
 
         {/* AI Safety Tip */}
-        <motion.div
-          className="mt-3 flex w-full items-center gap-3 rounded-2xl border border-fuchsia-500/30 bg-[#100b22]/95 px-3 py-3 shadow-[0_0_18px_rgba(168,85,247,0.10)]"
+        <motion.button
+          type="button"
+          onClick={() => setShowSafetyTip(true)}
+          className="mt-3 flex w-full items-center gap-3 rounded-2xl border border-fuchsia-500/30 bg-[#100b22]/95 px-3 py-3 text-left shadow-[0_0_18px_rgba(168,85,247,0.10)] transition active:scale-[0.99]"
           animate={{ y: [0, -1, 0] }}
           transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut" }}
+          aria-label="Open AI safety tip"
         >
           <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-fuchsia-400/40 bg-fuchsia-500/10 text-lg text-fuchsia-300">
             ✦
@@ -447,11 +471,207 @@ export default function JourneyMap({ setActiveTab }: JourneyMapProps) {
           </div>
 
           <span className="shrink-0 text-xl text-fuchsia-300">›</span>
-        </motion.div>
+        </motion.button>
 
         {/* STEP 4 COMPLETE */}
       </div>
     </GlassCard>
+
+    {/* LIVE JOURNEY STATUS MODAL */}
+    {showLiveStatus && (
+      <div
+        className="fixed inset-0 z-[260] flex items-center justify-center bg-black/70 px-5 backdrop-blur-sm"
+        onClick={() => setShowLiveStatus(false)}
+      >
+        <div
+          className="w-full max-w-[340px] rounded-[26px] border border-rose-400/20 bg-[#0d1420] p-5 shadow-[0_0_30px_rgba(244,63,94,0.16)]"
+          onClick={(event) => event.stopPropagation()}
+        >
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.30em] text-pink-300">
+                LIVE JOURNEY
+              </p>
+
+              <h3 className="mt-2 text-[22px] font-bold text-white">
+                Live Monitoring
+              </h3>
+
+              <p className="mt-2 text-[10px] leading-5 text-white/45">
+                Your journey is currently live and your safety status is being monitored.
+              </p>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setShowLiveStatus(false)}
+              aria-label="Close live journey status"
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] text-white/70"
+            >
+              <X size={17} />
+            </button>
+          </div>
+
+          <div className="mt-5 space-y-3">
+            <div className="rounded-2xl border border-emerald-400/10 bg-emerald-400/[0.035] p-4">
+              <div className="flex items-center gap-2">
+                <span className="h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_10px_rgba(52,211,153,0.8)]" />
+                <span className="text-[10px] font-semibold text-emerald-300">
+                  Journey Active
+                </span>
+              </div>
+              <p className="mt-2 text-[9px] leading-4 text-white/40">
+                Live protection and journey monitoring are active.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2">
+              <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-3">
+                <p className="text-[8px] uppercase tracking-[0.14em] text-fuchsia-300">
+                  Duration
+                </p>
+                <p className="mt-2 text-[12px] font-semibold text-white">
+                  00:24:36
+                </p>
+              </div>
+
+              <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-3">
+                <p className="text-[8px] uppercase tracking-[0.14em] text-cyan-300">
+                  Distance
+                </p>
+                <p className="mt-2 text-[12px] font-semibold text-white">
+                  12.4 km
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setShowLiveStatus(false)}
+            className="mt-5 w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-[10px] font-semibold text-white/60 transition hover:bg-white/[0.08]"
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    )}
+
+    {/* CURRENT LOCATION STATUS MODAL */}
+    {showLocationStatus && (
+      <div
+        className="fixed inset-0 z-[260] flex items-center justify-center bg-black/70 px-5 backdrop-blur-sm"
+        onClick={() => setShowLocationStatus(false)}
+      >
+        <div
+          className="w-full max-w-[340px] rounded-[26px] border border-cyan-400/20 bg-[#0d1420] p-5 shadow-[0_0_30px_rgba(34,211,238,0.14)]"
+          onClick={(event) => event.stopPropagation()}
+        >
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.30em] text-cyan-300">
+                JOURNEY MAP
+              </p>
+
+              <h3 className="mt-2 text-[22px] font-bold text-white">
+                Current Location
+              </h3>
+
+              <p className="mt-2 text-[10px] leading-5 text-white/45">
+                SWM has centered the journey map on your current position.
+              </p>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setShowLocationStatus(false)}
+              aria-label="Close current location status"
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] text-white/70"
+            >
+              <X size={17} />
+            </button>
+          </div>
+
+          <div className="mt-5 rounded-2xl border border-cyan-400/10 bg-cyan-400/[0.035] p-4">
+            <div className="flex items-center gap-2">
+              <span className="h-2 w-2 rounded-full bg-cyan-400 shadow-[0_0_10px_rgba(34,211,238,0.8)]" />
+              <span className="text-[10px] font-semibold text-cyan-300">
+                Location Active
+              </span>
+            </div>
+
+            <p className="mt-2 text-[9px] leading-4 text-white/40">
+              Your current position is being used for the protected journey.
+            </p>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setShowLocationStatus(false)}
+            className="mt-5 w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-[10px] font-semibold text-white/60 transition hover:bg-white/[0.08]"
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    )}
+
+    {/* AI SAFETY TIP MODAL */}
+    {showSafetyTip && (
+      <div
+        className="fixed inset-0 z-[260] flex items-center justify-center bg-black/70 px-5 backdrop-blur-sm"
+        onClick={() => setShowSafetyTip(false)}
+      >
+        <div
+          className="w-full max-w-[340px] rounded-[26px] border border-fuchsia-400/20 bg-[#0d1420] p-5 shadow-[0_0_30px_rgba(168,85,247,0.16)]"
+          onClick={(event) => event.stopPropagation()}
+        >
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.30em] text-fuchsia-300">
+                PERSONAL SAFETY AI
+              </p>
+              <h3 className="mt-2 text-[22px] font-bold text-white">
+                AI Safety Tip
+              </h3>
+              <p className="mt-2 text-[10px] leading-5 text-white/45">
+                Stay aware of your surroundings and keep your phone accessible.
+              </p>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setShowSafetyTip(false)}
+              aria-label="Close AI safety tip"
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] text-white/70"
+            >
+              <X size={17} />
+            </button>
+          </div>
+
+          <div className="mt-5 rounded-2xl border border-fuchsia-400/10 bg-fuchsia-400/[0.035] p-4">
+            <div className="flex items-center gap-2">
+              <span className="h-2 w-2 rounded-full bg-fuchsia-400 shadow-[0_0_10px_rgba(217,70,239,0.8)]" />
+              <span className="text-[10px] font-semibold text-fuchsia-300">
+                Safety reminder
+              </span>
+            </div>
+            <p className="mt-2 text-[10px] leading-5 text-white/60">
+              Keep your phone accessible, stay aware of your surroundings, and follow your protected route.
+            </p>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setShowSafetyTip(false)}
+            className="mt-5 w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-[10px] font-semibold text-white/60 transition hover:bg-white/[0.08]"
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    )}
+    </>
   );
 }
 

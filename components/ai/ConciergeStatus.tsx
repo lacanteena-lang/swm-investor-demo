@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from "react";
+
 import { motion } from "framer-motion";
 import {
   Headphones,
@@ -12,6 +14,11 @@ import {
 import GlassCard from "../ui/GlassCard";
 
 export default function ConciergeStatus() {
+  const [aiConciergeOpen, setAiConciergeOpen] = useState(false);
+  const [humanConciergeOpen, setHumanConciergeOpen] = useState(false);
+  const [responseTimeOpen, setResponseTimeOpen] = useState(false);
+  const [neverAloneOpen, setNeverAloneOpen] = useState(false);
+
   return (
     <GlassCard>
       {/* =========================================================
@@ -139,8 +146,18 @@ export default function ConciergeStatus() {
 
           <motion.div
             whileHover={{ scale: 1.01 }}
+            role="button"
+            tabIndex={0}
+            onClick={() => setAiConciergeOpen((open) => !open)}
+            onKeyDown={(event) => {
+              if (event.key === "Enter" || event.key === " ") {
+                event.preventDefault();
+                setAiConciergeOpen((open) => !open);
+              }
+            }}
             className="
               flex
+              cursor-pointer
               items-center
               justify-between
               rounded-2xl
@@ -152,6 +169,8 @@ export default function ConciergeStatus() {
               to-[#063A83]
               px-4
               py-4
+              transition-all
+              active:scale-[0.99]
               shadow-[inset_0_1px_0_rgba(255,255,255,0.12),0_8px_25px_rgba(0,110,255,0.22)]
             "
           >
@@ -185,14 +204,62 @@ export default function ConciergeStatus() {
             </div>
           </motion.div>
 
+          {aiConciergeOpen && (
+            <motion.div
+              initial={{ opacity: 0, height: 0, y: -4 }}
+              animate={{ opacity: 1, height: "auto", y: 0 }}
+              className="overflow-hidden rounded-2xl border border-cyan-300/25 bg-cyan-400/[0.04]"
+            >
+              <div className="p-4">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-cyan-300/25 bg-cyan-400/10">
+                    <Bot size={20} className="text-cyan-200" />
+                  </div>
+
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[11px] font-bold text-white">
+                      AI Concierge Active
+                    </p>
+                    <p className="mt-1 text-[9px] leading-4 text-white/60">
+                      Your AI Concierge is continuously monitoring your journey
+                      and is ready to assist.
+                    </p>
+                  </div>
+
+                  <span className="rounded-full border border-cyan-300/20 bg-cyan-400/10 px-2 py-1 text-[7px] font-black text-cyan-200">
+                    ACTIVE
+                  </span>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setAiConciergeOpen(false)}
+                  className="mt-3 w-full rounded-xl border border-white/10 bg-white/[0.025] px-3 py-2 text-[8px] font-bold uppercase tracking-[0.12em] text-white/70 transition hover:bg-white/[0.06] active:scale-[0.99]"
+                >
+                  CLOSE
+                </button>
+              </div>
+            </motion.div>
+          )}
+
           {/* =====================================================
               HUMAN CONCIERGE
           ===================================================== */}
 
           <motion.div
             whileHover={{ scale: 1.01 }}
+            role="button"
+            tabIndex={0}
+            onClick={() => setHumanConciergeOpen((open) => !open)}
+            onKeyDown={(event) => {
+              if (event.key === "Enter" || event.key === " ") {
+                event.preventDefault();
+                setHumanConciergeOpen((open) => !open);
+              }
+            }}
             className="
               flex
+              cursor-pointer
               items-center
               justify-between
               rounded-2xl
@@ -204,6 +271,8 @@ export default function ConciergeStatus() {
               to-[#063A83]
               px-4
               py-4
+              transition-all
+              active:scale-[0.99]
               shadow-[inset_0_1px_0_rgba(255,255,255,0.10),0_8px_25px_rgba(0,110,255,0.20)]
             "
           >
@@ -237,14 +306,62 @@ export default function ConciergeStatus() {
             </div>
           </motion.div>
 
+          {humanConciergeOpen && (
+            <motion.div
+              initial={{ opacity: 0, height: 0, y: -4 }}
+              animate={{ opacity: 1, height: "auto", y: 0 }}
+              className="overflow-hidden rounded-2xl border border-emerald-300/25 bg-emerald-400/[0.04]"
+            >
+              <div className="p-4">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-emerald-300/25 bg-emerald-400/10">
+                    <ShieldCheck size={20} className="text-emerald-200" />
+                  </div>
+
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[11px] font-bold text-white">
+                      Human Concierge Online
+                    </p>
+                    <p className="mt-1 text-[9px] leading-4 text-white/60">
+                      A real human Personal Safety Concierge is standing by
+                      and available to support you whenever needed.
+                    </p>
+                  </div>
+
+                  <span className="rounded-full border border-emerald-300/20 bg-emerald-400/10 px-2 py-1 text-[7px] font-black text-emerald-200">
+                    ONLINE
+                  </span>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setHumanConciergeOpen(false)}
+                  className="mt-3 w-full rounded-xl border border-white/10 bg-white/[0.025] px-3 py-2 text-[8px] font-bold uppercase tracking-[0.12em] text-white/70 transition hover:bg-white/[0.06] active:scale-[0.99]"
+                >
+                  CLOSE
+                </button>
+              </div>
+            </motion.div>
+          )}
+
           {/* =====================================================
               RESPONSE TIME
           ===================================================== */}
 
           <motion.div
             whileHover={{ scale: 1.01 }}
+            role="button"
+            tabIndex={0}
+            onClick={() => setResponseTimeOpen((open) => !open)}
+            onKeyDown={(event) => {
+              if (event.key === "Enter" || event.key === " ") {
+                event.preventDefault();
+                setResponseTimeOpen((open) => !open);
+              }
+            }}
             className="
               flex
+              cursor-pointer
               items-center
               justify-between
               rounded-2xl
@@ -256,6 +373,8 @@ export default function ConciergeStatus() {
               to-[#063A83]
               px-4
               py-4
+              transition-all
+              active:scale-[0.99]
               shadow-[inset_0_1px_0_rgba(255,255,255,0.10),0_8px_25px_rgba(0,110,255,0.20)]
             "
           >
@@ -286,6 +405,44 @@ export default function ConciergeStatus() {
           </motion.div>
         </div>
 
+        {responseTimeOpen && (
+          <motion.div
+            initial={{ opacity: 0, height: 0, y: -4 }}
+            animate={{ opacity: 1, height: "auto", y: 0 }}
+            className="mt-3 overflow-hidden rounded-2xl border border-cyan-300/25 bg-cyan-400/[0.04]"
+          >
+            <div className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-cyan-300/25 bg-cyan-400/10">
+                  <Clock3 size={20} className="text-cyan-200" />
+                </div>
+
+                <div className="min-w-0 flex-1">
+                  <p className="text-[11px] font-bold text-white">
+                    Concierge Response Time
+                  </p>
+                  <p className="mt-1 text-[9px] leading-4 text-white/60">
+                    Average response time is under 30 seconds, keeping human
+                    safety support close when you need it.
+                  </p>
+                </div>
+
+                <span className="rounded-full border border-cyan-300/20 bg-cyan-400/10 px-2 py-1 text-[7px] font-black text-cyan-200">
+                  &lt;30 SEC
+                </span>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setResponseTimeOpen(false)}
+                className="mt-3 w-full rounded-xl border border-white/10 bg-white/[0.025] px-3 py-2 text-[8px] font-bold uppercase tracking-[0.12em] text-white/70 transition hover:bg-white/[0.06] active:scale-[0.99]"
+              >
+                CLOSE
+              </button>
+            </div>
+          </motion.div>
+        )}
+
         {/* =========================================================
             YOU'RE NEVER ALONE
         ========================================================= */}
@@ -303,13 +460,25 @@ export default function ConciergeStatus() {
             repeat: Infinity,
             ease: "easeInOut",
           }}
+          role="button"
+          tabIndex={0}
+          onClick={() => setNeverAloneOpen((open) => !open)}
+          onKeyDown={(event) => {
+            if (event.key === "Enter" || event.key === " ") {
+              event.preventDefault();
+              setNeverAloneOpen((open) => !open);
+            }
+          }}
           className="
             relative
             mt-5
+            cursor-pointer
             overflow-hidden
             rounded-2xl
             border
             border-cyan-300/55
+            transition-transform
+            active:scale-[0.995]
             bg-gradient-to-br
             from-[#0878D8]
             via-[#0758B8]
@@ -341,6 +510,48 @@ export default function ConciergeStatus() {
             </div>
           </div>
         </motion.div>
+
+        {neverAloneOpen && (
+          <motion.div
+            initial={{ opacity: 0, height: 0, y: -4 }}
+            animate={{ opacity: 1, height: "auto", y: 0 }}
+            className="mt-3 overflow-hidden rounded-2xl border border-cyan-300/25 bg-cyan-400/[0.04]"
+          >
+            <div className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-cyan-300/25 bg-cyan-400/10">
+                  <CheckCircle2 size={20} className="text-cyan-200" />
+                </div>
+
+                <div className="min-w-0 flex-1">
+                  <p className="text-[11px] font-bold text-white">
+                    You're Never Alone
+                  </p>
+                  <p className="mt-1 text-[9px] leading-4 text-white/60">
+                    Your AI Concierge continuously monitors your journey while
+                    your Personal Safety Concierge remains available whenever
+                    you need support.
+                  </p>
+                </div>
+
+                <span className="rounded-full border border-emerald-300/20 bg-emerald-400/10 px-2 py-1 text-[7px] font-black text-emerald-200">
+                  ACTIVE
+                </span>
+              </div>
+
+              <button
+                type="button"
+                onClick={(event) => {
+                  event.stopPropagation();
+                  setNeverAloneOpen(false);
+                }}
+                className="mt-3 w-full rounded-xl border border-white/10 bg-white/[0.025] px-3 py-2 text-[8px] font-bold uppercase tracking-[0.12em] text-white/70 transition hover:bg-white/[0.06] active:scale-[0.99]"
+              >
+                CLOSE
+              </button>
+            </div>
+          </motion.div>
+        )}
 
       </div>
     </GlassCard>

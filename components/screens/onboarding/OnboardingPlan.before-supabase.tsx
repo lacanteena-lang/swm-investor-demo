@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Screen from "../../ui/Screen";
-import { supabase } from "../../../lib/supabase";
 
 type Plan = "free" | "premium" | "pro" | "family";
 
@@ -134,60 +133,15 @@ export default function OnboardingPlan() {
     }
   }
 
-  async function continueToHome() {
-  if (!otpComplete) return;
+  function continueToHome() {
+    if (!otpComplete) return;
 
-  setProcessing(true);
-
-  try {
-    const { data: authData, error: authError } =
-      await supabase.auth.signInAnonymously();
-
-    if (authError) {
-      throw authError;
-    }
-
-    const user = authData.user;
-
-    if (!user) {
-      throw new Error("Unable to create a Supabase user session.");
-    }
-
-    const { error: profileError } = await supabase
-      .from("profiles")
-      .upsert(
-        {
-          id: user.id,
-          mobile: mobile.trim(),
-          email: email.trim(),
-          selected_plan: selectedPlan,
-          },
-        {
-          onConflict: "id",
-        }
-      );
-
-    if (profileError) {
-      throw profileError;
-    }
+    setProcessing(true);
 
     setTimeout(() => {
       router.push("/");
     }, 800);
-  } catch (error) {
-    console.error("SWM onboarding save failed:", error);
-    setProcessing(false);
-    alert("We could not save your profile. Please try again.");
   }
-}
-    
-
-    
-
-    
-    
-    
-  
 
   return (
     <Screen>
