@@ -1,0 +1,15 @@
+"use client";
+
+export default function ConciergeConsole() {
+  return (
+    <div className="h-full bg-[#050B16] text-white p-6">
+      <h1 className="text-2xl font-bold">
+        Human Concierge
+      </h1>
+
+      <p className="mt-2 text-white/60">
+        Concierge Console
+      </p>
+    </div>
+  );
+}

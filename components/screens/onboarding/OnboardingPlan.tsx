@@ -1,9 +1,8 @@
-"use client";
+﻿"use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Screen from "../../ui/Screen";
-import { supabase } from "../../../lib/supabase";
 
 type Plan = "free" | "premium" | "pro" | "family";
 
@@ -11,7 +10,7 @@ const plans = {
   free: {
     name: "FREE",
     subtitle: "Stay Protected",
-    price: "₹0",
+    price: "\u20B90",
     yearly: "",
     badge: "",
     button: "Get Started",
@@ -28,8 +27,8 @@ const plans = {
   premium: {
     name: "PREMIUM",
     subtitle: "Stay Ahead",
-    price: "₹149",
-    yearly: "₹1,499 / year  •  Save 17%",
+    price: "\u20B9149",
+    yearly: "\u20B91,499 / year  \u2022  Save 17%",
     badge: "MOST POPULAR",
     button: "Choose Premium",
     accent: "red",
@@ -47,8 +46,8 @@ const plans = {
   pro: {
     name: "PRO",
     subtitle: "Stay Unstoppable",
-    price: "₹249",
-    yearly: "₹2,499 / year  •  Save 16%",
+    price: "\u20B9249",
+    yearly: "\u20B92,499 / year  \u2022  Save 16%",
     badge: "",
     button: "Go Pro",
     accent: "blue",
@@ -66,7 +65,7 @@ const plans = {
   family: {
     name: "FAMILY PLAN",
     subtitle: "Stay Together",
-    price: "₹499",
+    price: "\u20B9499",
     yearly: "",
     badge: "",
     button: "Protect Family",
@@ -94,6 +93,15 @@ export default function OnboardingPlan() {
   const [paymentMethod, setPaymentMethod] =
     useState<"upi" | "card" | "bank">("upi");
 
+    const [showUpiOptions, setShowUpiOptions] =
+      useState(false);
+
+    const [showCardOptions, setShowCardOptions] =
+      useState(false);
+
+    const [showBankOptions, setShowBankOptions] =
+      useState(false);
+
   const [otp, setOtp] = useState([
     "",
     "",
@@ -104,6 +112,8 @@ export default function OnboardingPlan() {
   ]);
 
   const [processing, setProcessing] = useState(false);
+  const [showActivation, setShowActivation] = useState(false);
+  const [activationStep, setActivationStep] = useState(0);
 
   const selected = plans[selectedPlan];
 
@@ -134,60 +144,51 @@ export default function OnboardingPlan() {
     }
   }
 
-  async function continueToHome() {
-  if (!otpComplete) return;
+  async function sendOtp() {
+    if (!mobile.trim()) return;
 
-  setProcessing(true);
+    try {
+      const response = await fetch('/api/otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ mobile: mobile.trim() }),
+      });
 
-  try {
-    const { data: authData, error: authError } =
-      await supabase.auth.signInAnonymously();
+      const result = await response.json();
 
-    if (authError) {
-      throw authError;
+      if (!response.ok) {
+        console.error('OTP send failed:', result);
+        return;
+      }
+
+      console.log('SWM OTP sent successfully.');
+    } catch (error) {
+      console.error('OTP request failed:', error);
     }
-
-    const user = authData.user;
-
-    if (!user) {
-      throw new Error("Unable to create a Supabase user session.");
-    }
-
-    const { error: profileError } = await supabase
-      .from("profiles")
-      .upsert(
-        {
-          id: user.id,
-          mobile: mobile.trim(),
-          email: email.trim(),
-          selected_plan: selectedPlan,
-          },
-        {
-          onConflict: "id",
-        }
-      );
-
-    if (profileError) {
-      throw profileError;
-    }
-
-    setTimeout(() => {
-      router.push("/");
-    }, 800);
-  } catch (error) {
-    console.error("SWM onboarding save failed:", error);
-    setProcessing(false);
-    alert("We could not save your profile. Please try again.");
   }
-}
-    
 
-    
+  useEffect(() => {
+    if (!showActivation) return;
 
-    
-    
-    
-  
+    setActivationStep(0);
+
+    const timers = [
+      window.setTimeout(() => setActivationStep(1), 700),
+      window.setTimeout(() => setActivationStep(2), 1400),
+      window.setTimeout(() => setActivationStep(3), 2100),
+      window.setTimeout(() => setActivationStep(4), 2800),
+      window.setTimeout(() => router.push("/"), 5000),
+    ];
+
+    return () => timers.forEach(window.clearTimeout);
+  }, [showActivation, router]);
+
+  function continueToHome() {
+    if (!otpComplete) return;
+
+    setProcessing(true);
+    setShowActivation(true);
+  }
 
   return (
     <Screen>
@@ -314,7 +315,7 @@ export default function OnboardingPlan() {
                 rounded-full
                 border
                 border-white/10
-                bg-white/[0.04]
+                bg-white/[0.03]
                 px-4
                 py-2
                 text-[10px]
@@ -378,7 +379,7 @@ export default function OnboardingPlan() {
                 text-[36px]
                 font-semibold
                 leading-[1.02]
-                tracking-[-0.04em]
+                tracking-[-0.03em]
               "
             >
               You&apos;re Never
@@ -408,8 +409,9 @@ export default function OnboardingPlan() {
                 mt-7
                 w-full
                 rounded-[24px]
-                border
-                border-white/10
+                border-2
+                border-red-500
+                shadow-[0_0_22px_rgba(239,68,68,0.85)]
                 bg-white/[0.055]
                 p-4
                 backdrop-blur-xl
@@ -427,8 +429,13 @@ export default function OnboardingPlan() {
                     items-center
                     justify-center
                     rounded-2xl
+                    border-2
+                      !border-red-500
+                    shadow-[0_0_22px_rgba(239,68,68,0.85)]
                     bg-cyan-300/10
                     text-cyan-300
+                    
+                    
                   "
                 >
                   ◉
@@ -454,11 +461,11 @@ export default function OnboardingPlan() {
 
             <div className="mt-4 grid w-full grid-cols-3 gap-2">
 
-              <Value title="AI-POWERED" icon="✦" />
+              <Value title="AI-POWERED" icon={"\u2726"} />
 
-              <Value title="HUMAN-SUPPORTED" icon="◉" />
+              <Value title="HUMAN-SUPPORTED" icon={"\u25C9"} />
 
-              <Value title="PRIVACY-FIRST" icon="◇" />
+              <Value title="PRIVACY-FIRST" icon={"\u25C7"} />
 
             </div>
 
@@ -609,6 +616,119 @@ export default function OnboardingPlan() {
 
                 </div>
 
+                {paymentMethod === "upi" && (
+                  <div className="mt-3 rounded-[16px] border border-cyan-300/20 bg-cyan-300/5 p-4">
+                    <p className="text-[11px] font-semibold text-cyan-200">
+                      UPI PAYMENT
+                    </p>
+                    <p className="mt-1 text-[10px] text-white/60">
+                      Choose your UPI payment option.
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => setShowUpiOptions(true)}
+                      className="mt-3 w-full rounded-xl border border-cyan-300/30 bg-cyan-300/10 py-3 text-[11px] font-semibold text-cyan-200"
+                    >
+                      PROCEED WITH UPI
+                    </button>
+
+                    {showUpiOptions && (
+                      <div className="mt-3 grid gap-2">
+                        <button
+                          type="button"
+                          className="w-full rounded-xl border border-white/10 bg-white/[0.035] py-3 text-[10px] font-semibold text-white"
+                        >
+                          ENTER UPI ID
+                        </button>
+                        <button
+                          type="button"
+                          className="w-full rounded-xl border border-white/10 bg-white/[0.035] py-3 text-[10px] font-semibold text-white"
+                        >
+                          SCAN QR CODE
+                        </button>
+                        <button
+                          type="button"
+                          className="w-full rounded-xl border border-white/10 bg-white/[0.035] py-3 text-[10px] font-semibold text-white"
+                        >
+                          PAY VIA UPI APP
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {paymentMethod === "card" && (
+                  <div className="mt-3 rounded-[16px] border border-cyan-300/20 bg-cyan-300/5 p-4">
+                    <p className="text-[11px] font-semibold text-cyan-200">
+                      CARD PAYMENT
+                    </p>
+                    <p className="mt-1 text-[10px] text-white/60">
+                      Enter your card details to continue.
+                    </p>
+
+                    <button
+                      type="button"
+                      onClick={() => setShowCardOptions(true)}
+                      className="mt-3 w-full rounded-xl border border-cyan-300/30 bg-cyan-300/10 py-3 text-[11px] font-semibold text-cyan-200"
+                    >
+                      PROCEED WITH CARD
+                    </button>
+
+                    {showCardOptions && (
+                      <div className="mt-3 grid gap-2">
+                        <button
+                          type="button"
+                          className="w-full rounded-xl border border-white/10 bg-white/[0.035] py-3 text-[10px] font-semibold text-white"
+                        >
+                          CREDIT CARD
+                        </button>
+                        <button
+                          type="button"
+                          className="w-full rounded-xl border border-white/10 bg-white/[0.035] py-3 text-[10px] font-semibold text-white"
+                        >
+                          DEBIT CARD
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {paymentMethod === "bank" && (
+                  <div className="mt-3 rounded-[16px] border border-cyan-300/20 bg-cyan-300/5 p-4">
+                    <p className="text-[11px] font-semibold text-cyan-200">
+                      BANK TRANSFER
+                    </p>
+                    <p className="mt-1 text-[10px] text-white/60">
+                      Continue with bank transfer.
+                    </p>
+
+                    <button
+                      type="button"
+                      onClick={() => setShowBankOptions(true)}
+                      className="mt-3 w-full rounded-xl border border-cyan-300/30 bg-cyan-300/10 py-3 text-[11px] font-semibold text-cyan-200"
+                    >
+                      PROCEED WITH BANK
+                    </button>
+
+                    {showBankOptions && (
+                      <div className="mt-3 grid gap-2">
+                        <button
+                          type="button"
+                          className="w-full rounded-xl border border-white/10 bg-white/[0.035] py-3 text-[10px] font-semibold text-white"
+                        >
+                          BANK ACCOUNT DETAILS
+                        </button>
+                        <button
+                          type="button"
+                          className="w-full rounded-xl border border-white/10 bg-white/[0.035] py-3 text-[10px] font-semibold text-white"
+                        >
+                          NET BANKING
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
+
               </section>
             </>
           )}
@@ -622,7 +742,7 @@ export default function OnboardingPlan() {
           <section>
 
             <Step
-              number="04"
+              number="03"
               title="MOBILE VERIFICATION"
             />
 
@@ -633,6 +753,8 @@ export default function OnboardingPlan() {
             <p className="mt-2 text-[12px] text-white">
               Enter the 6-digit OTP sent to your mobile.
             </p>
+
+            <button type="button" onClick={sendOtp} className="relative z-50 mt-4 w-full cursor-pointer pointer-events-auto rounded-xl border border-cyan-300/50 bg-cyan-300/10 py-3 text-[11px] font-semibold tracking-[0.18em] text-cyan-300">SEND OTP</button>
 
             <div className="mt-6 grid grid-cols-6 gap-2">
 
@@ -656,7 +778,7 @@ export default function OnboardingPlan() {
                     rounded-[14px]
                     border
                     border-white/10
-                    bg-white/[0.045]
+                    bg-white/[0.035]
                     text-center
                     text-[19px]
                     font-bold
@@ -678,7 +800,7 @@ export default function OnboardingPlan() {
 
               <button
                 type="button"
-                onClick={() =>
+                onClick={() => {
                   setOtp([
                     "",
                     "",
@@ -687,7 +809,8 @@ export default function OnboardingPlan() {
                     "",
                     "",
                   ])
-                }
+                  sendOtp();
+                }}
                 className="
                   text-[10px]
                   font-semibold
@@ -766,6 +889,101 @@ export default function OnboardingPlan() {
           </section>
 
         </div>
+
+        {showActivation && (
+          <div className="absolute inset-0 z-[100] flex items-center justify-center overflow-hidden bg-[#05070d] px-7">
+            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_18%,rgba(34,211,238,0.10),transparent_34%),radial-gradient(circle_at_50%_72%,rgba(0,255,170,0.08),transparent_34%)]" />
+
+            <div className="relative w-full max-w-[340px]">
+
+              <div className="mx-auto h-[2px] w-16 bg-cyan-300 shadow-[0_0_18px_rgba(34,211,238,0.9)]" />
+
+              <p className="mt-7 text-center text-[9px] font-bold tracking-[0.25em] text-cyan-300">
+                SWM ACTIVATION
+              </p>
+
+              <h2 className="mt-3 text-center text-[23px] font-semibold tracking-[-0.02em] text-white">
+                Verifying your protection...
+              </h2>
+
+              <p className="mt-2 text-center text-[10px] leading-5 text-white/55">
+                Just a moment. We&apos;re setting everything up for you.
+              </p>
+
+              <div className="mt-8 space-y-3">
+                {[
+                  [1, "Mobile verified", "Your number is confirmed"],
+                  [2, "Payment confirmed", "Your payment has been received"],
+                  [3, "Protection activated", "Your SWM protection is now active"],
+                  [4, "Emergency support ready", "Our team is on standby for you"],
+                ].map(([step, title, subtitle]) => {
+                  const number = Number(step);
+                  const done = activationStep >= number;
+                  const current = activationStep === number - 1;
+
+                  return (
+                    <div key={number} className="flex items-center gap-3">
+                      <div
+                        className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full border transition-all duration-500 ${
+                          done
+                            ? "border-emerald-300 bg-emerald-400/20 text-emerald-300 shadow-[0_0_18px_rgba(52,211,153,0.35)]"
+                            : current
+                              ? "border-cyan-300 bg-cyan-300/10 text-cyan-300 shadow-[0_0_16px_rgba(34,211,238,0.25)]"
+                              : "border-white/10 bg-white/[0.025] text-white/20"
+                        }`}
+                      >
+                        {done ? (
+                          <span className="text-[19px] font-bold">✓</span>
+                        ) : (
+                          <span className={`h-2.5 w-2.5 rounded-full ${current ? "bg-cyan-300 animate-pulse" : "bg-white/10"}`} />
+                        )}
+                      </div>
+
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center justify-between gap-2">
+                          <p className={`text-[12px] font-semibold transition-colors duration-500 ${done ? "text-white" : "text-white/45"}`}>
+                            {title}
+                          </p>
+                          <span className={`shrink-0 text-[9px] font-semibold transition-colors duration-500 ${done ? "text-emerald-300" : "text-white/25"}`}>
+                            {done ? "DONE" : current ? "SETTING UP" : "PENDING"}
+                          </span>
+                        </div>
+                        <p className={`mt-0.5 text-[9px] transition-colors duration-500 ${done ? "text-white/55" : "text-white/25"}`}>
+                          {subtitle}
+                        </p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              <div className={`mt-7 rounded-[18px] border p-4 transition-all duration-700 ${activationStep >= 4 ? "border-emerald-300/40 bg-emerald-400/[0.08] shadow-[0_0_30px_rgba(52,211,153,0.12)]" : "border-white/10 bg-white/[0.025]"}`}>
+                <p className="text-[9px] font-bold tracking-[0.18em] text-emerald-300">
+                  WELCOME TO SWM
+                </p>
+                <p className="mt-1 text-[17px] font-bold text-white">
+                  YOU&apos;RE PROTECTED.
+                </p>
+              </div>
+
+              <p className="mt-7 text-center text-[9px] text-white/45">
+                {activationStep >= 4 ? "Taking you to Home..." : "Activating your protection..."}
+              </p>
+
+              <div className="mt-2 h-1 overflow-hidden rounded-full bg-white/10">
+                <div
+                  className="h-full rounded-full bg-cyan-300 shadow-[0_0_12px_rgba(34,211,238,0.8)] transition-all duration-700"
+                  style={{ width: `${Math.min(activationStep * 25, 100)}%` }}
+                />
+              </div>
+
+              <p className="mt-6 text-center text-[8px] tracking-[0.12em] text-white/35">
+                SECURE • PRIVATE • AI-ASSISTED • HUMAN-SUPPORTED
+              </p>
+
+            </div>
+          </div>
+        )}
 
       </div>
 
@@ -991,33 +1209,39 @@ function Value({
   title: string;
   icon: string;
 }) {
+  const styles =
+    title === "AI-POWERED"
+      ? {
+          border: "border-cyan-400",
+          icon: "text-cyan-300",
+          glow: "shadow-[0_0_18px_rgba(34,211,238,0.55)]",
+        }
+      : title === "HUMAN-SUPPORTED"
+      ? {
+          border: "border-pink-500",
+          icon: "text-pink-400",
+          glow: "shadow-[0_0_18px_rgba(236,72,153,0.55)]",
+        }
+      : {
+          border: "border-yellow-400",
+          icon: "text-yellow-300",
+          glow: "shadow-[0_0_18px_rgba(250,203,21,0.55)]",
+        };
+
   return (
     <div
-      className="
-        flex
-        h-[76px]
-        flex-col
-        items-center
-        justify-center
-        rounded-[18px]
-        border
-        border-white/10
-        bg-white/[0.045]
-      "
+      className={`flex h-[76px] flex-col items-center justify-center rounded-[18px] border ${styles.border} ${styles.glow} bg-white/[0.035]`}
     >
-
-      <div className="mb-2 text-[16px] text-cyan-300">
+      <div className={`mb-2 text-[28px] leading-none ${styles.icon} drop-shadow-[0_0_10px_currentColor]`}>
         {icon}
       </div>
 
       <span className="text-center text-[8px] font-bold tracking-[0.08em] text-white">
         {title}
       </span>
-
     </div>
   );
 }
-
 /* =========================================================
    INPUT
 ========================================================= */
@@ -1039,10 +1263,11 @@ function Input({
         rounded-[18px]
         border
         border-white/10
-        bg-white/[0.045]
+        bg-white/[0.035]
         px-4
         py-4
       "
+      style={{ borderColor: "#22d3ee", boxShadow: "0 0 22px rgba(34,211,238,0.75)" }}
     >
 
       <p className="text-[9px] font-bold uppercase tracking-[0.14em] text-white">

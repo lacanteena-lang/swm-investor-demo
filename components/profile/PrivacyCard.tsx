@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
@@ -236,7 +236,7 @@ export default function PrivacyCard() {
                       "
                     />
 
-                    <span className="text-[10px] font-medium text-white/50">
+                    <span className="text-[10px] font-medium text-[#39FF14] drop-shadow-[0_0_7px_rgba(57,255,20,0.95)]">
                       {value}
                     </span>
 

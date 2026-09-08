@@ -14,11 +14,13 @@ import ConciergeStatus from "./ConciergeStatus";
 type Props = {
   activeTab: string;
   setActiveTab: (tab: string) => void;
+  onStartJourney: () => void;
 };
 
 export default function AIHome({
   activeTab,
   setActiveTab,
+  onStartJourney,
 }: Props) {
   return (
     <ScreenLayout
@@ -41,14 +43,7 @@ export default function AIHome({
           pb-36
         "
       >
-
-        {/* =====================================================
-            PREMIUM AMBIENT BACKGROUND
-        ===================================================== */}
-
         <div className="pointer-events-none absolute inset-0 overflow-hidden">
-
-          {/* Top cyan glow */}
           <div
             className="
               absolute
@@ -63,7 +58,6 @@ export default function AIHome({
             "
           />
 
-          {/* Concierge centre glow */}
           <div
             className="
               absolute
@@ -78,7 +72,6 @@ export default function AIHome({
             "
           />
 
-          {/* Bottom atmosphere */}
           <div
             className="
               absolute
@@ -92,33 +85,18 @@ export default function AIHome({
               blur-[120px]
             "
           />
-
         </div>
 
-
-        {/* =====================================================
-            CONTENT
-        ===================================================== */}
-
         <div className="relative z-10">
-
-          {/* HEADER */}
-
           <div className="mt-1">
-
             <SectionHeader
               eyebrow="AI CONCIERGE"
               title="How can I help today?"
               subtitle="AI assistance backed by your Personal Safety Concierge."
             />
-
           </div>
 
-
-          {/* AI ORB */}
-
           <div className="mt-5 flex justify-center">
-
             <div
               className="
                 relative
@@ -127,9 +105,6 @@ export default function AIHome({
                 justify-center
               "
             >
-
-              {/* Soft outer glow */}
-
               <div
                 className="
                   pointer-events-none
@@ -141,8 +116,6 @@ export default function AIHome({
                   blur-[55px]
                 "
               />
-
-              {/* Secondary ring */}
 
               <div
                 className="
@@ -157,42 +130,26 @@ export default function AIHome({
               />
 
               <AIOrb />
-
             </div>
-
           </div>
-
-
-          {/* VOICE CONCIERGE */}
 
           <div className="mt-8">
-
-            <VoicePanel />
-
+            <VoicePanel
+              onStartJourney={onStartJourney}
+            />
           </div>
-
-
-          {/* CONVERSATION */}
 
           <div className="mt-7">
-
             <AIConversation
               setActiveTab={setActiveTab}
+              onStartJourney={onStartJourney}
             />
-
           </div>
-
-
-          {/* CONCIERGE STATUS */}
 
           <div className="mt-7 pb-5">
-
             <ConciergeStatus />
-
           </div>
-
         </div>
-
       </motion.div>
     </ScreenLayout>
   );

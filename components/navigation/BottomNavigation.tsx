@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import {
   Bot,
@@ -94,7 +94,20 @@ export default function BottomNavigation({
       {/* JOURNEY */}
 
       <button
-        onClick={() => setActiveTab("journey")}
+        onClick={() => {
+  try {
+    const stored = window.localStorage.getItem("swm_active_journey");
+    const journey = stored ? JSON.parse(stored) : null;
+
+    if (journey?.isJourneyActive === true) {
+      setActiveTab("live-protection");
+    } else {
+      setActiveTab("journey");
+    }
+  } catch {
+    setActiveTab("journey");
+  }
+}}
         className="flex flex-col items-center"
       >
         <div
@@ -195,3 +208,4 @@ export default function BottomNavigation({
     </div>
   );
 }
+

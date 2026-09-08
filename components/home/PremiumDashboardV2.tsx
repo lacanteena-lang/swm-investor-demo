@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import {
@@ -13,7 +13,7 @@ import {
 import HeroCard from "./HeroCard";
 import JourneyCard from "./JourneyCard";
 import StatusCards from "./StatusCards";
-
+import LiveProtectionCommandCenter from "./LiveProtectionCommandCenter";
 type Props = {
   setActiveTab: (tab: string) => void;
 };
@@ -34,13 +34,13 @@ export default function PremiumDashboardV2({
   };
 
   const goTo = (tab: string) => {
-    console.log(`SWM NOTIFICATION → ${tab}`);
+    console.log(`SWM NOTIFICATION -> ${tab}`);
     setNotificationsOpen(false);
     setActiveTab(tab);
   };
 
   return (
-    <div className="relative flex h-full min-h-0 flex-col overflow-hidden">
+    <div className="relative flex h-full min-h-0 flex-col overflow-visible">
 
       {/* BACKGROUND GLOW */}
 
@@ -53,12 +53,12 @@ export default function PremiumDashboardV2({
 
       {/* HEADER */}
 
-      <div className="relative z-[60] flex shrink-0 items-center justify-between px-6 pt-1 pb-2">
+      <div className="relative z-[60] flex shrink-0 items-center justify-between pl-[130px] pr-3 pt-1 pb-2 gap-2">
 
         <div className="flex items-center gap-2">
           <div className="h-2 w-2 animate-pulse rounded-full bg-emerald-400" />
 
-          <span className="text-[11px] font-semibold uppercase tracking-[0.32em] text-white/90">
+          <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-white">
             Concierge Online
           </span>
         </div>
@@ -122,7 +122,7 @@ export default function PremiumDashboardV2({
 
         {/* HERO */}
 
-        <div className="relative z-10 h-[265px] shrink-0">
+        <div className="relative z-10 h-[500px] shrink-0">
           <HeroCard />
         </div>
 
@@ -354,7 +354,7 @@ export default function PremiumDashboardV2({
 
               <button
                 type="button"
-                onClick={() => goTo("journey")}
+                onClick={() => goTo("live-protection")}
                 className="
                   group
                   flex
@@ -468,3 +468,11 @@ export default function PremiumDashboardV2({
     </div>
   );
 }
+
+
+
+
+
+
+
+

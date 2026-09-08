@@ -1,0 +1,183 @@
+import { NextRequest, NextResponse } from "next/server";
+import { createClient } from "@supabase/supabase-js";
+
+const supabaseAdmin = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+);
+
+export async function POST(request: NextRequest) {
+  try {
+    const body = await request.json();
+
+    const {
+      incidentId,
+      contactCount,
+      status,
+      testMode,
+    } = body;
+
+    if (!incidentId) {
+      return NextResponse.json(
+        { error: "Incident ID is required." },
+        { status: 400 }
+      );
+    }
+
+    if (typeof contactCount !== "number") {
+      return NextResponse.json(
+        { error: "Contact count is required." },
+        { status: 400 }
+      );
+    }
+
+    if (!status) {
+      return NextResponse.json(
+        { error: "Notification status is required." },
+        { status: 400 }
+      );
+    }
+
+    const apiKey = process.env.SMSHORIZON_API_KEY;
+    const username = process.env.SMSHORIZON_USER;
+    const senderId = process.env.SMSHORIZON_SENDER_ID;
+    const templateId = process.env.SMSHORIZON_TID;
+    const testNumber = process.env.SMSHORIZON_TEST_NUMBER;
+
+    if (!apiKey || !username || !senderId || !templateId) {
+      return NextResponse.json(
+        { error: "SmsHorizon configuration is incomplete." },
+        { status: 500 }
+      );
+    }
+
+    const { data: incident, error: incidentError } =
+      await supabaseAdmin
+        .from("incident_timeline")
+        .select("id, user_id")
+        .eq("id", incidentId)
+        .maybeSingle();
+
+    if (incidentError) {
+      console.error("Unable to load incident:", incidentError);
+
+      return NextResponse.json(
+        { error: "Unable to load incident." },
+        { status: 500 }
+      );
+    }
+
+    if (!incident?.user_id) {
+      return NextResponse.json(
+        { error: "Incident user could not be identified." },
+        { status: 404 }
+      );
+    }
+
+    const { data: contacts, error: contactsError } =
+      await supabaseAdmin
+        .from("emergency_contacts")
+        .select("id, name, relationship, phone")
+        .eq("user_id", incident.user_id);
+
+    if (contactsError) {
+      console.error("Unable to load emergency contacts:", contactsError);
+
+      return NextResponse.json(
+        { error: "Unable to load emergency contacts." },
+        { status: 500 }
+      );
+    }
+
+    const validContacts = (contacts ?? []).filter(
+      (contact) => contact.phone && contact.phone.trim()
+    );
+
+    if (validContacts.length === 0) {
+      console.log(
+        `No emergency contact phone numbers found for incident ${incidentId}.`
+      );
+
+      return NextResponse.json({
+        success: true,
+        incidentId,
+        contactCount: 0,
+        status,
+        message: "No emergency contact phone numbers available.",
+        smsSent: 0,
+      });
+    }
+
+    const message =
+      "SWM SOS activated. Please check with the user immediately.";
+
+    const results = [];
+
+    for (const contact of validContacts) {
+      const smsBody = new URLSearchParams({
+        user: username,
+        mobile: testMode ? testNumber : contact.phone.trim(),
+        senderid: senderId,
+        message,
+        tid: templateId,
+        type: "txt",
+      });
+
+      const smsResponse = await fetch(
+        "https://smshorizon.com/api/v2/sendsms",
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${apiKey}`,
+            Accept: "application/json",
+            "Content-Type": "application/x-www-form-urlencoded",
+          },
+          body: smsBody.toString(),
+          cache: "no-store",
+        }
+      );
+
+      const smsResult = await smsResponse.json();
+
+      results.push({
+        contactId: contact.id,
+        phone: contact.phone,
+        ok: smsResponse.ok,
+        result: smsResult,
+      });
+
+      if (!smsResponse.ok) {
+        console.error(
+          `SmsHorizon send failed for emergency contact ${contact.id}:`,
+          smsResult
+        );
+      } else {
+        console.log(
+          `SmsHorizon SMS sent for incident ${incidentId} to emergency contact ${contact.id}.`
+        );
+      }
+    }
+
+    const failed = results.filter((result) => !result.ok);
+
+    return NextResponse.json({
+      success: failed.length === 0,
+      incidentId,
+      contactCount: validContacts.length,
+      status,
+      smsSent: results.length - failed.length,
+      smsFailed: failed.length,
+      results,
+    });
+  } catch (error) {
+    console.error("Notification API error:", error);
+
+    return NextResponse.json(
+      { error: "Unable to send notification." },
+      { status: 500 }
+    );
+  }
+}
+
+
+

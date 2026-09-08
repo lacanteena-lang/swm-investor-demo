@@ -1,0 +1,44 @@
+import { NextRequest, NextResponse } from "next/server";
+
+export async function POST(request: NextRequest) {
+  try {
+    const body = await request.json();
+
+    const {
+      incidentId,
+      userId,
+      contactCount,
+      latitude,
+      longitude,
+    } = body;
+
+    if (!incidentId) {
+      return NextResponse.json(
+        { error: "Incident ID is required." },
+        { status: 400 }
+      );
+    }
+
+    console.log("HUMAN CONCIERGE INCIDENT RECEIVED:", {
+      incidentId,
+      userId,
+      contactCount,
+      latitude,
+      longitude,
+    });
+
+    return NextResponse.json({
+      success: true,
+      conciergeStatus: "activated",
+      incidentId,
+      message: "Human Concierge has been alerted.",
+    });
+  } catch (error) {
+    console.error("Concierge API error:", error);
+
+    return NextResponse.json(
+      { error: "Unable to activate Human Concierge." },
+      { status: 500 }
+    );
+  }
+}

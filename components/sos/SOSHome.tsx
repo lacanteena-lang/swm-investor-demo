@@ -1,6 +1,7 @@
-"use client";
+﻿"use client";
 
 import { motion } from "framer-motion";
+import { supabase } from "../../lib/supabase";
 
 import { useEffect, useState } from "react";
 import {
@@ -35,6 +36,7 @@ export default function SOSHome({
 }: Props) {
   const [activated, setActivated] = useState(false);
   const [responseStep, setResponseStep] = useState(0);
+  const [contactCount, setContactCount] = useState(0);
   const [activating, setActivating] = useState(false);
   const [conciergeOpen, setConciergeOpen] = useState(false);
   const [conciergeCardOpen, setConciergeCardOpen] = useState(false);
@@ -49,18 +51,105 @@ export default function SOSHome({
   const [locationReadyOpen, setLocationReadyOpen] = useState(false);
   const [dataSyncReadyOpen, setDataSyncReadyOpen] = useState(false);
   const [alertsReadyOpen, setAlertsReadyOpen] = useState(false);
-  const [workflowOpen, setWorkflowOpen] = useState<string | null>(null);
-  const [conciergeBannerOpen, setConciergeBannerOpen] = useState(false);
-  const [humanSupportOpen, setHumanSupportOpen] = useState(false);
-  const [contactsStatusOpen, setContactsStatusOpen] = useState(false);
-  const [monitoringStatusOpen, setMonitoringStatusOpen] = useState(false);
-  const [conciergeConnectionOpen, setConciergeConnectionOpen] = useState(false);
 
-  const activateSOS = () => {
+  const activateSOS = async () => {
+  
     if (activated || activating) return;
 
     setActivating(true);
     setResponseStep(0);
+
+    try {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (user) {
+
+        const { data: emergencyContacts, error: contactsError } =
+          await supabase
+            .from("emergency_contacts")
+            .select("id, name, relationship, phone")
+            .eq("user_id", user.id);
+
+        if (contactsError) {
+          console.error(
+            "Unable to load emergency contacts:",
+            contactsError
+          );
+        }
+
+        const contactCount = emergencyContacts?.length ?? 0;
+
+        const { data: incident, error } = await supabase.from("incident_timeline").insert({
+          user_id: user.id,
+          title: "SOS activated",
+          description:
+            `Emergency SOS response was activated. ${contactCount} emergency contact${contactCount === 1 ? "" : "s"} available.`,
+          notification_status: "contacts_identified",
+          notification_contact_count: contactCount,
+        }).select("id").single();
+
+        if (error) {
+          console.error("Unable to save SOS activation:", error);
+        } else {
+          console.log(
+            `SOS activated with ${contactCount} emergency contact${contactCount === 1 ? "" : "s"}.`
+          );
+          
+          if (incident?.id) {
+            try {
+              const response = await fetch("/api/notifications", {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                  incidentId: incident.id,
+                  contactCount,
+                  status: "contacts_identified",
+                }),
+              });
+
+              const notificationResult = await response.json();
+
+              if (!response.ok) {
+                console.error(
+                  "Notification preparation failed:",
+                  notificationResult
+                );
+              } else {
+                console.log(
+                  "Notification preparation confirmed:",
+                  notificationResult
+                );                
+                const { error: conciergeUpdateError } = await supabase
+                  .from("incident_timeline")
+                  .update({ concierge_status: "activated" })
+                  .eq("id", incident.id)
+                  .eq("user_id", user.id);
+
+                if (conciergeUpdateError) {
+                  console.error(
+                    "Unable to update Concierge status:",
+                    conciergeUpdateError
+                  );
+                } else {
+                  console.log("CONCIERGE STATUS UPDATED: activated");
+                }
+              }
+            } catch (notificationError) {
+              console.error(
+                "Notification API error:",
+                notificationError
+              );
+            }
+          }
+        }
+      }
+    } catch (error) {
+      console.error("SOS activation persistence error:", error);
+    }
 
     window.setTimeout(() => {
       setActivating(false);
@@ -125,19 +214,19 @@ export default function SOSHome({
             icon={<Wifi size={18} />}
             label="NETWORK"
             value="STRONG"
-            className="text-emerald-300"
+            className="text-white"
           />
           <StatusItem
             icon={<Headphones size={18} />}
             label="CONCIERGE"
             value="ONLINE"
-            className="text-emerald-300"
+            className="text-white"
           />
           <StatusItem
             icon={<BatteryMedium size={18} />}
             label="BATTERY"
             value="82%"
-            className="text-emerald-300"
+            className="text-white"
           />
         </div>
 
@@ -174,7 +263,7 @@ export default function SOSHome({
           <div className="relative flex flex-col items-center">
             <div className="relative flex h-[230px] w-[230px] items-center justify-center">
 
-              {/* CENTRAL SOS RESPONSE CORE — HIGH-POWER NEON */}
+              {/* CENTRAL SOS RESPONSE CORE - HIGH-POWER NEON */}
               <div
                 className={`absolute inset-[-10px] rounded-full transition-all duration-700 ${
                   activating
@@ -267,13 +356,13 @@ export default function SOSHome({
 
                 {!activated && !activating && (
                   <span className="mt-2 text-[16px] leading-none text-white/90">
-                    ↓
+                    v
                   </span>
                 )}
               </button>
             </div>
 
-            <p className="relative -mt-1 text-[8px] font-semibold uppercase tracking-[0.20em] text-white/35">
+            <p className={`relative -mt-1 text-[8px] font-semibold uppercase tracking-[0.20em] ${!activating && !activated ? "text-white" : "text-white/35"}`}>
               {activating
                 ? "Establishing emergency response..."
                 : activated
@@ -339,7 +428,7 @@ export default function SOSHome({
           />
           <NetworkCard
             icon={<Users size={22} />}
-            title="5 CONTACTS"
+            title={`${contactCount} CONTACT${contactCount === 1 ? "" : "S"}`}
             status={responseStep >= 3 ? "NOTIFIED" : "READY"}
             tone="orange"
             active={responseStep >= 3}
@@ -815,7 +904,7 @@ export default function SOSHome({
                     Personal Safety Concierge
                   </p>
                   <span className="rounded-full border border-emerald-300/50 bg-emerald-400/10 px-1.5 py-0.5 text-[7px] font-black text-emerald-200 shadow-[0_0_10px_rgba(52,211,153,0.30)]">
-                    {responseStep >= 2 ? "● LIVE" : "READY"}
+                    {responseStep >= 2 ? "LIVE" : "READY"}
                   </span>
                 </div>
 
@@ -823,7 +912,7 @@ export default function SOSHome({
                   className={`mt-1 text-[9px] font-black leading-4 ${
                     responseStep >= 2
                       ? "text-red-400 drop-shadow-[0_0_8px_rgba(248,113,113,0.95)]"
-                      : "text-white/85"
+                      : "text-[#C76B4A]"
                   }`}
                 >
                   {responseStep >= 2
@@ -850,19 +939,16 @@ export default function SOSHome({
                 label="HUMAN SUPPORT"
                 value={responseStep >= 2 ? "ACTIVE" : "READY"}
                 active={responseStep >= 2}
-                onClick={() => setHumanSupportOpen((open) => !open)}
               />
               <ConciergeStatus
-                label="5 CONTACTS"
+                label={`${contactCount} CONTACT${contactCount === 1 ? "" : "S"}`}
                 value={responseStep >= 3 ? "NOTIFIED" : "READY"}
                 active={responseStep >= 3}
-                onClick={() => setContactsStatusOpen((open) => !open)}
               />
               <ConciergeStatus
                 label="MONITORING"
                 value={responseStep >= 2 ? "LIVE" : "STANDBY"}
                 active={responseStep >= 2}
-                onClick={() => setMonitoringStatusOpen((open) => !open)}
               />
             </div>
 
@@ -871,31 +957,25 @@ export default function SOSHome({
               onClick={() => setConciergeOpen((open) => !open)}
               className={`mt-3 w-full rounded-xl border px-3 py-2.5 text-[8px] font-bold uppercase tracking-[0.12em] transition-all active:scale-[0.99] ${
                 responseStep >= 2
-                  ? "border-cyan-300/55 bg-cyan-400/10 text-cyan-200 shadow-[0_0_18px_rgba(34,211,238,0.22)]"
-                  : "border-white/10 bg-white/[0.025] text-white/75"
+                  ? "border-cyan-300/55 bg-cyan-400/10 text-white shadow-[0_0_18px_rgba(34,211,238,0.22)]"
+                  : "border-white/10 bg-white/[0.025] text-white"
               }`}
             >
               {conciergeOpen ? "CLOSE CONCIERGE STATUS" : "VIEW CONCIERGE STATUS"}
             </button>
 
             {conciergeOpen && (
-              <motion.button
-                type="button"
+              <motion.div
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: "auto" }}
-                onClick={() => setConciergeConnectionOpen((open) => !open)}
-                className={`mt-3 w-full overflow-hidden rounded-xl border bg-black/20 p-3 text-left transition-all active:scale-[0.99] ${
-                  conciergeConnectionOpen
-                    ? "border-violet-300/40 bg-violet-400/[0.06]"
-                    : "border-white/[0.07] hover:bg-white/[0.035]"
-                }`}
+                className="mt-3 overflow-hidden rounded-xl border border-white/[0.07] bg-black/20 p-3"
               >
                 <div className="flex items-start gap-2.5">
                   <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-violet-400/10 text-violet-300">
                     <Headphones size={14} />
                   </div>
 
-                  <div className="min-w-0 flex-1">
+                  <div>
                     <p className="text-[10px] font-bold text-white">
                       Concierge connection
                     </p>
@@ -905,79 +985,11 @@ export default function SOSHome({
                         : "Ready to connect when an emergency response begins."}
                     </p>
                   </div>
-                  <span className="shrink-0 rounded-full border border-violet-300/20 bg-violet-400/[0.06] px-2 py-1 text-[7px] font-black text-violet-200">
-                    {conciergeConnectionOpen ? "OPEN" : "VIEW"}
-                  </span>
                 </div>
-              </motion.button>
+              </motion.div>
             )}
           </div>
         </div>
-
-        {(humanSupportOpen || contactsStatusOpen || monitoringStatusOpen || conciergeConnectionOpen) && (
-          <motion.div
-            initial={{ opacity: 0, y: -6, height: 0 }}
-            animate={{ opacity: 1, y: 0, height: "auto" }}
-            className="mt-2 overflow-hidden rounded-2xl border border-violet-300/20 bg-violet-400/[0.035]"
-          >
-            <div className="p-3.5">
-              <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-violet-300/25 bg-violet-400/10 text-violet-300">
-                  <Headphones size={20} />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="text-[10px] font-bold text-white">
-                    {humanSupportOpen
-                      ? "Human Support"
-                      : contactsStatusOpen
-                        ? "Emergency Contacts"
-                        : monitoringStatusOpen
-                          ? "Concierge Monitoring"
-                          : "Concierge Connection"}
-                  </p>
-                  <p className="mt-1 text-[8px] leading-4 text-white/60">
-                    {humanSupportOpen
-                      ? responseStep >= 2
-                        ? "A real human Concierge is actively supporting your emergency response."
-                        : "Human Concierge support is ready to connect when an emergency begins."
-                      : contactsStatusOpen
-                        ? responseStep >= 3
-                          ? "Your emergency contacts have been notified."
-                          : "Your emergency contacts are ready to be notified."
-                        : monitoringStatusOpen
-                          ? responseStep >= 2
-                            ? "Live Concierge monitoring is active."
-                            : "Concierge monitoring is standing by."
-                          : responseStep >= 2
-                            ? "The Concierge is connected and monitoring the active safety workflow."
-                            : "The Concierge connection is ready for an emergency response."}
-                  </p>
-                </div>
-                <span className="shrink-0 rounded-full border border-violet-300/25 bg-violet-400/[0.06] px-2 py-1 text-[7px] font-black text-violet-200">
-                  {humanSupportOpen
-                    ? responseStep >= 2 ? "ACTIVE" : "READY"
-                    : contactsStatusOpen
-                      ? responseStep >= 3 ? "NOTIFIED" : "READY"
-                      : monitoringStatusOpen
-                        ? responseStep >= 2 ? "LIVE" : "STANDBY"
-                        : responseStep >= 2 ? "CONNECTED" : "READY"}
-                </span>
-              </div>
-              <button
-                type="button"
-                onClick={() => {
-                  setHumanSupportOpen(false);
-                  setContactsStatusOpen(false);
-                  setMonitoringStatusOpen(false);
-                  setConciergeConnectionOpen(false);
-                }}
-                className="mt-3 w-full rounded-xl border border-white/10 bg-white/[0.025] px-3 py-2 text-[8px] font-bold uppercase tracking-[0.12em] text-white/70 transition hover:bg-white/[0.06] active:scale-[0.99]"
-              >
-                CLOSE
-              </button>
-            </div>
-          </motion.div>
-        )}
 
         {/* WORKFLOW */}
         <SectionTitle title="EMERGENCY WORKFLOW STATUS" />
@@ -990,8 +1002,7 @@ export default function SOSHome({
             value={responseStep >= 1 ? "CAPTURING" : "READY"}
             tone="violet"
             active={responseStep >= 1}
-                      onClick={() => setWorkflowOpen((value) => value === "photo" ? null : "photo")}
-/>
+          />
           <WorkflowRow
             icon={<Video size={18} />}
             label="Video Recording"
@@ -999,8 +1010,7 @@ export default function SOSHome({
             value={responseStep >= 2 ? "RECORDING" : "READY"}
             tone="red"
             active={responseStep >= 2}
-                      onClick={() => setWorkflowOpen((value) => value === "video" ? null : "video")}
-/>
+          />
           <WorkflowRow
             icon={<Mic size={18} />}
             label="Audio Recording"
@@ -1008,8 +1018,7 @@ export default function SOSHome({
             value={responseStep >= 3 ? "RECORDING" : "READY"}
             tone="orange"
             active={responseStep >= 3}
-                      onClick={() => setWorkflowOpen((value) => value === "audio" ? null : "audio")}
-/>
+          />
           <WorkflowRow
             icon={<Clock3 size={18} />}
             label="Incident Timeline"
@@ -1017,8 +1026,7 @@ export default function SOSHome({
             value={responseStep >= 4 ? "LIVE" : "AUTOMATIC"}
             tone="cyan"
             active={responseStep >= 4}
-                      onClick={() => setWorkflowOpen((value) => value === "timeline" ? null : "timeline")}
-/>
+          />
           <WorkflowRow
             icon={<UserRound size={18} />}
             label="Concierge Emergency Monitoring"
@@ -1027,138 +1035,35 @@ export default function SOSHome({
             tone="red"
             active={responseStep >= 2}
             last
-                      onClick={() => setWorkflowOpen((value) => value === "concierge" ? null : "concierge")}
-/>
+          />
         </div>
 
-        {workflowOpen && (
-          <motion.div
-            initial={{ opacity: 0, y: -6, height: 0 }}
-            animate={{ opacity: 1, y: 0, height: "auto" }}
-            className="mt-2 overflow-hidden rounded-2xl border border-red-400/20 bg-[#071122] shadow-[0_0_20px_rgba(239,68,68,0.08)]"
-          >
-            <div className="p-3.5">
-              <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-red-400/20 bg-red-400/10 text-red-300">
-                  {workflowOpen === "photo" && <Camera size={19} />}
-                  {workflowOpen === "video" && <Video size={19} />}
-                  {workflowOpen === "audio" && <Mic size={19} />}
-                  {workflowOpen === "timeline" && <Clock3 size={19} />}
-                  {workflowOpen === "concierge" && <UserRound size={19} />}
-                </div>
-
-                <div className="min-w-0 flex-1">
-                  <p className="text-[10px] font-bold text-white">
-                    {workflowOpen === "photo" && "Photo Evidence"}
-                    {workflowOpen === "video" && "Video Recording"}
-                    {workflowOpen === "audio" && "Audio Recording"}
-                    {workflowOpen === "timeline" && "Incident Timeline"}
-                    {workflowOpen === "concierge" && "Concierge Emergency Monitoring"}
-                  </p>
-                  <p className="mt-1 text-[8px] leading-4 text-white/55">
-                    {workflowOpen === "photo" && (activated ? "Photo evidence capture is active." : "Photo evidence capture is ready.")}
-                    {workflowOpen === "video" && (activated ? "Video recording is active." : "Video recording is ready.")}
-                    {workflowOpen === "audio" && (activated ? "Audio recording is active." : "Audio recording is ready.")}
-                    {workflowOpen === "timeline" && (activated ? "The incident timeline is actively logging the emergency response." : "The incident timeline is ready for automatic logging.")}
-                    {workflowOpen === "concierge" && (activated ? "Your Personal Safety Concierge is actively monitoring the emergency response." : "Your Personal Safety Concierge is standing by and ready to support you.")}
-                  </p>
-                </div>
-
-                <span className="shrink-0 rounded-full border border-emerald-300/20 bg-emerald-400/10 px-2 py-1 text-[7px] font-black text-emerald-200">
-                  {workflowOpen === "photo" && (activated ? "CAPTURING" : "READY")}
-                  {workflowOpen === "video" && (activated ? "RECORDING" : "READY")}
-                  {workflowOpen === "audio" && (activated ? "RECORDING" : "READY")}
-                  {workflowOpen === "timeline" && (activated ? "LIVE" : "AUTOMATIC")}
-                  {workflowOpen === "concierge" && (activated ? "ACTIVE" : "STANDBY")}
-                </span>
-              </div>
-
-              <button
-                type="button"
-                onClick={() => setWorkflowOpen(null)}
-                className="mt-3 w-full rounded-xl border border-white/10 bg-white/[0.025] px-3 py-2 text-[8px] font-bold uppercase tracking-[0.12em] text-white/70 transition hover:bg-white/[0.06] active:scale-[0.99]"
-              >
-                CLOSE
-              </button>
-            </div>
-          </motion.div>
-        )}
-
         {/* HELP BANNER */}
-        <div
-          role="button"
-          tabIndex={0}
-          onClick={() => setConciergeBannerOpen((open) => !open)}
-          onKeyDown={(event) => {
-            if (event.key === "Enter" || event.key === " ") {
-              event.preventDefault();
-              setConciergeBannerOpen((open) => !open);
-            }
-          }}
-          className={`relative mt-3 cursor-pointer overflow-hidden rounded-2xl border px-3 py-3 transition-all duration-700 active:scale-[0.995] ${
+        <div className={`relative mt-3 flex items-center gap-3 overflow-hidden rounded-2xl border px-3 py-3 transition-all duration-700 ${
             activated
               ? "border-red-400/70 bg-red-500/[0.08] shadow-[0_0_35px_rgba(239,68,68,0.24)]"
               : "border-red-500/35 bg-[#071122] shadow-[0_0_20px_rgba(239,68,68,0.10)]"
-          }`}
-        >
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-red-400/30 bg-red-500/10">
-              <ShieldCheck size={22} className="text-red-400" />
-            </div>
+          }`}>
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-red-400/30 bg-red-500/10">
+            <ShieldCheck size={22} className="text-red-400" />
+          </div>
 
-            <div className="min-w-0 flex-1">
-              <p className="text-[11px] font-bold uppercase tracking-[0.05em] text-red-400">
-                {activated ? "STAY CALM, WE ARE WITH YOU" : "CONCIERGE READY"}
-              </p>
-              <p className="mt-1 text-[9px] leading-4 text-white/55">
-                {activated
-                  ? "Stay calm. Your SWM safety support is active."
-                  : "Your Personal Safety Concierge is standing by."}
-              </p>
-            </div>
+          <div className="min-w-0 flex-1">
+            <p className="text-[11px] font-bold uppercase tracking-[0.05em] text-red-400">
+              {activated ? "STAY CALM, WE ARE WITH YOU" : "CONCIERGE READY"}
+            </p>
+            <p className="mt-1 text-[9px] leading-4 text-white">
+              {activated
+                ? "Stay calm. Your SWM safety support is active."
+                : "Your Personal Safety Concierge is standing by."}
+            </p>
+          </div>
 
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-red-400/50 bg-[#0a1626] shadow-[0_0_16px_rgba(239,68,68,0.18)]">
-              <Headphones size={21} className="text-violet-300" />
-            </div>
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-red-400/50 bg-[#0a1626] shadow-[0_0_16px_rgba(239,68,68,0.18)]">
+            <Headphones size={21} className="text-violet-300" />
           </div>
 
           <span className="absolute bottom-2 right-3 h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_9px_rgba(52,211,153,0.8)]" />
-
-          {conciergeBannerOpen && (
-            <motion.div
-              initial={{ opacity: 0, height: 0, y: 4 }}
-              animate={{ opacity: 1, height: "auto", y: 0 }}
-              className="mt-3 overflow-hidden rounded-xl border border-violet-300/20 bg-violet-400/[0.04]"
-              onClick={(event) => event.stopPropagation()}
-            >
-              <div className="p-3">
-                <div className="flex items-center gap-3">
-                  <Headphones size={18} className="shrink-0 text-violet-300" />
-                  <div className="min-w-0 flex-1">
-                    <p className="text-[9px] font-bold text-white">
-                      Personal Safety Concierge
-                    </p>
-                    <p className="mt-1 text-[7px] leading-4 text-white/55">
-                      {activated
-                        ? "Live human safety support is active."
-                        : "Your Personal Safety Concierge is online and standing by."}
-                    </p>
-                  </div>
-                  <span className="rounded-full border border-emerald-300/20 bg-emerald-400/10 px-2 py-1 text-[7px] font-black text-emerald-200">
-                    {activated ? "ACTIVE" : "READY"}
-                  </span>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={() => setConciergeBannerOpen(false)}
-                  className="mt-3 w-full rounded-xl border border-white/10 bg-white/[0.025] px-3 py-2 text-[8px] font-bold uppercase tracking-[0.12em] text-white/70"
-                >
-                  CLOSE
-                </button>
-              </div>
-            </motion.div>
-          )}
         </div>
 
       </div>
@@ -1193,7 +1098,7 @@ function StatusItem({
     <div className="flex min-w-0 items-center justify-center gap-2 border-r border-white/10 px-2 py-3 last:border-r-0">
       <span className={className}>{icon}</span>
       <div className="min-w-0">
-        <p className="truncate text-[7px] font-semibold text-white/45">
+        <p className="truncate text-[7px] font-semibold text-white">
           {label}
         </p>
         <p className={`truncate text-[9px] font-bold ${className}`}>
@@ -1266,7 +1171,6 @@ function NetworkCard({
             }
           : undefined
       }
-      className={`cursor-pointer relative min-w-0 overflow-hidden rounded-xl border px-1.5 py-3 text-center transition-all duration-500 ${active ? `${activeGlow[tone]} bg-white/[0.09]` : tones[tone]}`}
       animate={
         active
           ? {
@@ -1280,6 +1184,11 @@ function NetworkCard({
           ? { duration: 0.65, repeat: 2, ease: "easeInOut" }
           : { duration: 0.2 }
       }
+      className={`relative min-w-0 overflow-hidden rounded-xl border px-1.5 py-3 text-center transition-all duration-500 ${
+        active
+          ? `${activeGlow[tone]} bg-white/[0.09]`
+          : tones[tone]
+      }`}
     >
       {active && (
         <>
@@ -1459,43 +1368,33 @@ function ConciergeStatus({
   label,
   value,
   active,
-  onClick,
 }: {
   label: string;
   value: string;
   active: boolean;
-  onClick?: () => void;
 }) {
   return (
-    <motion.button
-      type="button"
-      onClick={onClick}
+    <motion.div
       animate={active ? { scale: [1, 1.035, 1] } : { scale: 1 }}
       transition={{ duration: 1.2, repeat: active ? Infinity : 0, ease: "easeInOut" }}
       className={`rounded-xl border px-2 py-2 text-center transition-all duration-500 ${
         active
           ? "border-fuchsia-300/55 bg-fuchsia-400/[0.08] shadow-[0_0_18px_rgba(217,70,239,0.28),inset_0_0_16px_rgba(167,139,250,0.10)]"
           : "border-white/[0.06] bg-white/[0.02]"
-      } ${onClick ? "cursor-pointer active:scale-[0.98]" : ""}`}
+      }`}
     >
-      <p className="truncate text-[7px] font-bold text-white/80">{label}</p>
+      <p className="truncate text-[7px] font-bold text-white">{label}</p>
       <div className="mt-1 flex items-center justify-center gap-1">
         {active && (
           <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-fuchsia-200 shadow-[0_0_9px_rgba(217,70,239,1)]" />
         )}
         <p className={`truncate text-[8px] font-black ${
-          active
-            ? label === "HUMAN SUPPORT"
-              ? "text-emerald-300 drop-shadow-[0_0_6px_rgba(52,211,153,0.75)]"
-              : label === "5 CONTACTS"
-                ? "text-yellow-300 drop-shadow-[0_0_6px_rgba(253,224,71,0.75)]"
-                : "text-cyan-300 drop-shadow-[0_0_6px_rgba(34,211,238,0.75)]"
-            : "text-white/60"
+          active ? "text-white" : "text-white"
         }`}>
           {value}
         </p>
       </div>
-    </motion.button>
+    </motion.div>
   );
 }
 
@@ -1507,7 +1406,6 @@ function WorkflowRow({
   tone,
   active = false,
   last,
-  onClick,
 }: {
   icon: React.ReactNode;
   label: string;
@@ -1516,7 +1414,6 @@ function WorkflowRow({
   tone: "cyan" | "violet" | "orange" | "red";
   active?: boolean;
   last?: boolean;
-  onClick?: () => void;
 }) {
   const tones = {
     cyan: "text-cyan-300",
@@ -1537,29 +1434,16 @@ function WorkflowRow({
       animate={
         active
           ? { x: [0, 3, -2, 0], opacity: [0.82, 1, 1, 1] }
-          : { x: 0, opacity: 0.82 }
+          : { x: 0, opacity: 1 }
       }
       transition={
         active
           ? { duration: 0.55, ease: "easeOut" }
           : { duration: 0.2 }
       }
-      role={onClick ? "button" : undefined}
-      tabIndex={onClick ? 0 : undefined}
-      onClick={onClick}
-      onKeyDown={
-        onClick
-          ? (event) => {
-              if (event.key === "Enter" || event.key === " ") {
-                event.preventDefault();
-                onClick();
-              }
-            }
-          : undefined
-      }
       className={`relative flex items-center gap-2.5 px-3 py-2.5 transition-all duration-500 ${
         last ? "" : "border-b border-white/[0.06]"
-      } ${active ? activeBg[tone] : ""} ${onClick ? "cursor-pointer active:bg-white/[0.06]" : ""}`}
+      } ${active ? activeBg[tone] : ""}`}
     >
       {active && (
         <motion.div
@@ -1581,7 +1465,7 @@ function WorkflowRow({
 
         {active && (
           <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full border border-emerald-200/70 bg-emerald-400/20 text-[8px] font-black text-emerald-200 shadow-[0_0_10px_rgba(52,211,153,0.85)]">
-            ✓
+            &#10003;
           </span>
         )}
       </div>
@@ -1590,7 +1474,7 @@ function WorkflowRow({
         <p className="truncate text-[9px] font-semibold text-white">
           {label}
         </p>
-        <p className="mt-0.5 truncate text-[7px] text-white/40">
+        <p className="mt-0.5 truncate text-[9px] text-white">
           {sub}
         </p>
       </div>
@@ -1599,9 +1483,7 @@ function WorkflowRow({
         className={`relative shrink-0 text-[8px] font-bold ${
           active
             ? tones[tone]
-            : value === "AUTOMATIC"
-              ? "text-cyan-300"
-              : "text-white/35"
+            : value === "AUTOMATIC" ? "text-cyan-300" : "text-red-400"
         }`}
       >
         {value}
@@ -1617,3 +1499,25 @@ function WorkflowRow({
     </motion.div>
   );
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

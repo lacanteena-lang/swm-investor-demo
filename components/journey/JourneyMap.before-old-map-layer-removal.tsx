@@ -1,0 +1,1585 @@
+"use client";
+
+import { motion } from "framer-motion";
+import { useEffect, useRef, useState } from "react";
+import * as maplibregl from "maplibre-gl";
+
+maplibregl.setWorkerUrl("/maplibre/maplibre-gl-worker.mjs");
+
+import { Activity, ShieldCheck, Signal, X, Square, Play, MapPin } from "lucide-react";
+import GlassCard from "../ui/GlassCard";
+import { createClient } from "@supabase/supabase-js";
+
+type JourneyMapProps = {
+  setActiveTab: (tab: string) => void;
+};
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabasePublishableKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+
+const getSupabaseClient = (sessionId: string) => {
+  if (!supabaseUrl || !supabasePublishableKey) return null;
+
+  return createClient(
+  supabaseUrl,
+  supabasePublishableKey
+);
+    
+      
+        
+      
+    
+  
+};
+
+const JOURNEY_STORAGE_KEY = "swm_active_journey";
+const JOURNEY_SESSION_KEY = "swm_journey_session_id";
+
+export default function JourneyMap({ setActiveTab }: JourneyMapProps) {
+  const [showLiveStatus, setShowLiveStatus] = useState(false);
+  const [showLocationStatus, setShowLocationStatus] = useState(false);
+  const [showSafetyTip, setShowSafetyTip] = useState(false);
+  const [mapZoom, setMapZoom] = useState(1);
+  const [mapReady, setMapReady] = useState(false);
+  const [mapLoaded, setMapLoaded] = useState(false);
+  const mapContainerRef = useRef<HTMLDivElement | null>(null);
+  const mapInstanceRef = useRef<maplibregl.Map | null>(null);
+  const userMarkerRef = useRef<maplibregl.Marker | null>(null);
+  const destinationMarkerRef = useRef<maplibregl.Marker | null>(null);
+  const [isJourneyActive, setIsJourneyActive] = useState(false);
+  const [showEndJourneyConfirm, setShowEndJourneyConfirm] = useState(false);
+const [showDestinationSelector, setShowDestinationSelector] = useState(false);
+  // The existing Journey UI currently uses "Work" as its destination.
+  // Keep that approved UI unchanged while persisting the journey server-side.
+  const [destination, setDestination] = useState("Work");
+const [specificDestination, setSpecificDestination] = useState("");
+const [destinationSuggestions, setDestinationSuggestions] = useState<
+  Array<{
+    formatted: string;
+    latitude: number;
+    longitude: number;
+  }>
+>([]);
+const [destinationLocation, setDestinationLocation] = useState<{
+  latitude: number;
+  longitude: number;
+} | null>(null);
+const [isEnteringSpecificDestination, setIsEnteringSpecificDestination] = useState(false);
+const [isGeocodingDestination, setIsGeocodingDestination] = useState(false);
+useEffect(() => {
+  if (!isEnteringSpecificDestination) return;
+
+  const query = specificDestination.trim();
+
+  if (query.length < 3) {
+    setDestinationSuggestions([]);
+    return;
+  }
+
+  const timer = setTimeout(async () => {
+    try {
+      const response = await fetch(
+        `/api/geocode?q=${encodeURIComponent(query)}`
+      );
+
+      const data = await response.json();
+
+      if (response.ok && Array.isArray(data.results)) {
+        setDestinationSuggestions(data.results);
+      } else {
+        setDestinationSuggestions([]);
+      }
+    } catch {
+      setDestinationSuggestions([]);
+    }
+  }, 400);
+
+  return () => clearTimeout(timer);
+}, [specificDestination, isEnteringSpecificDestination]);
+  const [journeyStartedAt, setJourneyStartedAt] = useState<number>(() => Date.now());
+  const [elapsedSeconds, setElapsedSeconds] = useState(0);
+  const [journeyStateLoaded, setJourneyStateLoaded] = useState(false);
+  const [userLocation, setUserLocation] = useState<{
+    latitude: number;
+    longitude: number;
+    accuracy: number;
+  } | null>(null);
+  const [locationRequesting, setLocationRequesting] = useState(false);
+  const [locationError, setLocationError] = useState("");
+  const [showLocationPermissionIntro, setShowLocationPermissionIntro] = useState(false);
+  const [journeyStartLocation, setJourneyStartLocation] = useState<{
+    latitude: number;
+    longitude: number;
+  } | null>(null);
+  const [distanceKm, setDistanceKm] = useState(0);
+  const [locationTracking, setLocationTracking] = useState(false);
+  const [journeyId, setJourneyId] = useState<string | null>(null);
+  const [supabaseSyncStatus, setSupabaseSyncStatus] = useState<
+    "idle" | "syncing" | "synced" | "error"
+  >("idle");
+
+  useEffect(() => {
+    const map = mapInstanceRef.current;
+    if (!map) return;
+
+    if (userLocation) {
+      if (!userMarkerRef.current) {
+        const el = document.createElement("div");
+        el.style.width = "18px";
+        el.style.height = "18px";
+        el.style.borderRadius = "50%";
+        el.style.background = "#22c55e";
+        el.style.border = "3px solid white";
+        el.style.boxShadow = "0 0 18px rgba(34,197,94,0.85)";
+        userMarkerRef.current = new maplibregl.Marker({ element: el })
+          .setLngLat([userLocation.longitude, userLocation.latitude])
+          .addTo(map);
+      } else {
+        userMarkerRef.current.setLngLat([
+          userLocation.longitude,
+          userLocation.latitude,
+        ]);
+      }
+    } else if (userMarkerRef.current) {
+      userMarkerRef.current.remove();
+      userMarkerRef.current = null;
+    }
+
+    if (destinationLocation) {
+      if (!destinationMarkerRef.current) {
+        const el = document.createElement("div");
+        el.style.width = "20px";
+        el.style.height = "20px";
+        el.style.borderRadius = "50%";
+        el.style.background = "#ec4899";
+        el.style.border = "3px solid white";
+        el.style.boxShadow = "0 0 18px rgba(236,72,153,0.85)";
+        destinationMarkerRef.current = new maplibregl.Marker({ element: el })
+          .setLngLat([
+            destinationLocation.longitude,
+            destinationLocation.latitude,
+          ])
+          .addTo(map);
+      } else {
+        destinationMarkerRef.current.setLngLat([
+          destinationLocation.longitude,
+          destinationLocation.latitude,
+        ]);
+      }
+    } else if (destinationMarkerRef.current) {
+      destinationMarkerRef.current.remove();
+      destinationMarkerRef.current = null;
+    }
+  }, [userLocation, destinationLocation, mapReady, mapLoaded]);  useEffect(() => {
+    if (!mapContainerRef.current) return;
+
+    const map = new maplibregl.Map({
+      container: mapContainerRef.current,
+      style: `https://maps.geoapify.com/v1/styles/osm-bright-smooth/style.json?apiKey=${process.env.NEXT_PUBLIC_GEOAPIFY_API_KEY}`,
+      center: [77.1199, 28.5640],
+      zoom: 12,
+      attributionControl: false,
+    });
+
+    mapInstanceRef.current = map;
+
+    map.once("load", () => {
+      setMapLoaded(true);
+    });
+    setMapReady(true);
+
+    map.on("error", (event) => console.error("SWM MapLibre error:", event.error));
+
+    map.addControl(new maplibregl.NavigationControl(), "top-right");
+
+    return () => {
+      map.remove();
+    };
+  }, []);  useEffect(() => {
+    try {
+      const saved = window.localStorage.getItem(JOURNEY_STORAGE_KEY);
+
+      if (saved) {
+        const parsed = JSON.parse(saved);
+
+        if (typeof parsed?.journeyId === "string") {
+          setJourneyId(parsed.journeyId);
+        }
+
+        if (typeof parsed?.journeyStartedAt === "number") {
+          setJourneyStartedAt(parsed.journeyStartedAt);
+        }
+
+        if (typeof parsed?.isJourneyActive === "boolean") {
+          setIsJourneyActive(parsed.isJourneyActive);
+        }
+        if (typeof parsed?.destination === "string") {
+  setDestination(parsed.destination);
+}
+      }
+    } catch {
+      // Keep the current in-memory state if saved data cannot be read.
+    } finally {
+      setJourneyStateLoaded(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    try {
+      const saved = window.localStorage.getItem(JOURNEY_STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+
+        if (
+          parsed?.currentLocation &&
+          typeof parsed.currentLocation.latitude === "number" &&
+          typeof parsed.currentLocation.longitude === "number"
+        ) {
+          setUserLocation(parsed.currentLocation);
+        }
+
+        if (
+          parsed?.journeyStartLocation &&
+          typeof parsed.journeyStartLocation.latitude === "number" &&
+          typeof parsed.journeyStartLocation.longitude === "number"
+        ) {
+          setJourneyStartLocation(parsed.journeyStartLocation);
+        }
+
+        if (typeof parsed?.distanceKm === "number") {
+          setDistanceKm(parsed.distanceKm);
+        }
+        
+
+
+        if (
+  parsed?.destinationLocation &&
+  typeof parsed.destinationLocation.latitude === "number" &&
+  typeof parsed.destinationLocation.longitude === "number"
+) {
+  setDestinationLocation(parsed.destinationLocation);
+}
+      }
+    } catch {
+      // Keep the current location in memory if saved data cannot be read.
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!journeyStateLoaded) return;
+
+    try {
+      window.localStorage.setItem(
+        "swm_active_journey",
+        JSON.stringify({
+          isJourneyActive,
+          journeyStartedAt,
+          journeyId,
+          currentLocation: userLocation,
+          journeyStartLocation,
+          distanceKm,
+destinationLocation,
+destination,
+savedAt: Date.now(),
+          
+        })
+      );
+    } catch {
+      // Persistence is best-effort.
+    }
+  }, [
+    journeyStateLoaded,
+    isJourneyActive,
+    journeyStartedAt,
+    journeyId,
+    userLocation,
+    journeyStartLocation,
+distanceKm,
+destinationLocation,
+]);
+    
+  
+
+  useEffect(() => {
+    if (!isJourneyActive) return;
+
+    const updateElapsed = () => {
+      setElapsedSeconds(
+        Math.max(0, Math.floor((Date.now() - journeyStartedAt) / 1000))
+      );
+    };
+
+    updateElapsed();
+
+    const timer = window.setInterval(updateElapsed, 1000);
+
+    return () => window.clearInterval(timer);
+  }, [journeyStartedAt, isJourneyActive]);
+
+  const hours = Math.floor(elapsedSeconds / 3600);
+  const minutes = Math.floor((elapsedSeconds % 3600) / 60);
+  const seconds = elapsedSeconds % 60;
+
+  const journeyDuration = [
+    hours.toString().padStart(2, "0"),
+    minutes.toString().padStart(2, "0"),
+    seconds.toString().padStart(2, "0"),
+  ].join(":");
+
+  const journeyStartTime = new Date(journeyStartedAt).toLocaleTimeString([], {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+
+  const getOrCreateJourneyId = () => {
+    if (journeyId) return journeyId;
+
+    const existing = window.localStorage.getItem(JOURNEY_STORAGE_KEY);
+    if (existing) {
+      try {
+        const parsed = JSON.parse(existing);
+        if (typeof parsed?.journeyId === "string") {
+          setJourneyId(parsed.journeyId);
+          return parsed.journeyId;
+        }
+      } catch {
+        // Generate a new ID below.
+      }
+    }
+
+    const newId =
+      typeof crypto !== "undefined" && "randomUUID" in crypto
+        ? crypto.randomUUID()
+        : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+
+    setJourneyId(newId);
+    return newId;
+  };
+
+  const getOrCreateSessionId = () => {
+    const existing = window.localStorage.getItem(JOURNEY_SESSION_KEY);
+    if (existing) return existing;
+
+    const newSessionId =
+      typeof crypto !== "undefined" && "randomUUID" in crypto
+        ? crypto.randomUUID()
+        : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+
+    window.localStorage.setItem(JOURNEY_SESSION_KEY, newSessionId);
+    return newSessionId;
+  };
+
+  const syncJourneyToSupabase = async (status: "active" | "completed") => {
+    if (!journeyStateLoaded) return;
+
+    const currentJourneyId = getOrCreateJourneyId();
+    const sessionId = getOrCreateSessionId();
+    const supabase = getSupabaseClient(sessionId);
+
+    if (!supabase) {
+      setSupabaseSyncStatus("error");
+      return;
+    }
+
+    const payload = {
+      id: currentJourneyId,
+      session_id: sessionId,
+      status,
+      destination: destination || null,
+      started_at: new Date(journeyStartedAt).toISOString(),
+      ended_at:
+        status === "completed" ? new Date().toISOString() : null,
+      start_latitude: journeyStartLocation?.latitude ?? null,
+      start_longitude: journeyStartLocation?.longitude ?? null,
+      current_latitude: userLocation?.latitude ?? null,
+      current_longitude: userLocation?.longitude ?? null,
+      current_accuracy_m: userLocation?.accuracy ?? null,
+      distance_km: Number(distanceKm.toFixed(3)),
+      last_location_at: userLocation ? new Date().toISOString() : null,
+      updated_at: new Date().toISOString(),
+    };
+
+    setSupabaseSyncStatus("syncing");
+
+    const { error } = await supabase
+      .from("journeys")
+      .upsert(payload, { onConflict: "id" });
+
+    if (error) {
+      console.error(
+  "SWM Journey Supabase sync failed:",
+  JSON.stringify(error, Object.getOwnPropertyNames(error))
+);
+      setSupabaseSyncStatus("error");
+      return;
+    }
+
+    setSupabaseSyncStatus("synced");
+  };
+
+  const calculateDistanceKm = (
+    from: { latitude: number; longitude: number },
+    to: { latitude: number; longitude: number }
+  ) => {
+    const earthRadiusKm = 6371;
+    const dLat = ((to.latitude - from.latitude) * Math.PI) / 180;
+    const dLon = ((to.longitude - from.longitude) * Math.PI) / 180;
+    const lat1 = (from.latitude * Math.PI) / 180;
+    const lat2 = (to.latitude * Math.PI) / 180;
+
+    const a =
+      Math.sin(dLat / 2) ** 2 +
+      Math.sin(dLon / 2) ** 2 * Math.cos(lat1) * Math.cos(lat2);
+
+    return earthRadiusKm * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+      
+  };
+const totalJourneyDistanceKm = journeyStartLocation && destinationLocation ? calculateDistanceKm(journeyStartLocation, destinationLocation) : 0;
+  useEffect(() => {
+    if (!journeyStateLoaded || !isJourneyActive || !locationTracking) return;
+    if (!("geolocation" in navigator)) return;
+
+    const watchId = navigator.geolocation.watchPosition(
+      (position) => {
+        const nextLocation = {
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
+          accuracy: position.coords.accuracy,
+        };
+
+        setUserLocation(nextLocation);
+
+        setJourneyStartLocation((existingStart) => {
+          if (existingStart) return existingStart;
+
+          const firstPoint = {
+            latitude: nextLocation.latitude,
+            longitude: nextLocation.longitude,
+          };
+
+          try {
+            const saved = window.localStorage.getItem(JOURNEY_STORAGE_KEY);
+            const parsed = saved ? JSON.parse(saved) : {};
+
+            window.localStorage.setItem(
+              "swm_active_journey",
+              JSON.stringify({
+                ...parsed,
+                currentLocation: nextLocation,
+                journeyStartLocation: firstPoint,
+                distanceKm: 0,
+                locationUpdatedAt: Date.now(),
+                savedAt: Date.now(),
+              })
+            );
+          } catch {
+            // The live state remains available in memory.
+          }
+
+          return firstPoint;
+        });
+
+        setJourneyStartLocation((startLocation) => {
+          if (!startLocation) return startLocation;
+
+          const nextDistance = calculateDistanceKm(startLocation, nextLocation);
+          setDistanceKm(nextDistance);
+
+          void syncJourneyToSupabase("active");
+
+          return startLocation;
+        });
+
+        setLocationError("");
+      },
+      (error) => {
+        if (error.code === error.PERMISSION_DENIED) {
+          setLocationError("Location permission was denied.");
+          setLocationTracking(true);
+        } else if (error.code === error.POSITION_UNAVAILABLE) {
+          setLocationError("Your current location is temporarily unavailable.");
+        } else if (error.code === error.TIMEOUT) {
+          setLocationError("Location update timed out. SWM will keep trying.");
+        } else {
+          setLocationError("Unable to update your current location.");
+        }
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 15000,
+        maximumAge: 5000,
+      }
+    );
+
+    return () => {
+      navigator.geolocation.clearWatch(watchId);
+    };
+  }, [journeyStateLoaded, isJourneyActive, locationTracking]);
+
+  const requestCurrentLocation = () => {
+    setShowLocationStatus(true);
+
+    if (!("geolocation" in navigator)) {
+      setLocationError("Location is not supported on this device.");
+      setLocationRequesting(false);
+      return;
+    }
+
+    setLocationRequesting(true);
+    setLocationError("");
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const nextLocation = {
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
+          accuracy: position.coords.accuracy,
+        };
+ 
+        setUserLocation(nextLocation);
+        setJourneyStartLocation((existingStart) => {
+          if (existingStart) return existingStart;
+
+          return {
+            latitude: nextLocation.latitude,
+            longitude: nextLocation.longitude,
+          };
+        });
+        setLocationRequesting(false);
+        setLocationTracking(true);
+        setLocationError("");
+
+        void syncJourneyToSupabase("active");
+
+        try {
+          const saved = window.localStorage.getItem(JOURNEY_STORAGE_KEY);
+          const parsed = saved ? JSON.parse(saved) : {};
+          const firstPoint =
+            parsed?.journeyStartLocation || {
+              latitude: nextLocation.latitude,
+              longitude: nextLocation.longitude,
+            };
+
+          window.localStorage.setItem(
+            "swm_active_journey",
+            JSON.stringify({
+              ...parsed,
+              currentLocation: nextLocation,
+              journeyStartLocation: firstPoint,
+              distanceKm: typeof parsed?.distanceKm === "number" ? parsed.distanceKm : 0,
+              locationUpdatedAt: Date.now(),
+              savedAt: Date.now(),
+            })
+          );
+        } catch {
+          // Live location remains available in memory.
+        }
+      },
+      (error) => {
+        setLocationRequesting(false);
+
+        if (error.code === error.PERMISSION_DENIED) {
+          setLocationError("Location permission was denied. Please allow location access and try again.");
+        } else if (error.code === error.POSITION_UNAVAILABLE) {
+          setLocationError("Your current location is unavailable. Please try again.");
+        } else if (error.code === error.TIMEOUT) {
+          setLocationError("Location request timed out. Please try again.");
+        } else {
+          setLocationError("Unable to get your current location.");
+        }
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 15000,
+        maximumAge: 10000,
+      }
+    );
+  };
+
+
+  return (
+    <>
+    <GlassCard className="w-full max-w-full overflow-hidden p-3 sm:p-4">
+      <div className="w-full min-w-0">
+        {/* STEP 1 — SEALED HEADER ONLY */}
+
+        <div className="flex w-full min-w-0 items-center justify-between gap-2">
+          <div className="flex min-w-0 items-center gap-2 text-pink-400">
+            <span className="h-2.5 w-2.5 shrink-0 rounded-full bg-pink-500 shadow-[0_0_12px_rgba(236,72,153,0.9)]" />
+
+            <span className="truncate text-[10px] font-bold uppercase tracking-[0.22em]">
+              LIVE JOURNEY
+            </span>
+
+            <Signal className="h-3.5 w-3.5 shrink-0" />
+          </div>
+
+          <button type="button" onClick={() => setActiveTab("ai")} className="flex shrink-0 items-center gap-2 rounded-full border border-fuchsia-500/50 bg-fuchsia-500/[0.05] px-3 py-1.5">
+            <span className="text-xs text-fuchsia-300">✦</span>
+
+            <span className="text-[8px] font-bold uppercase tracking-[0.12em] text-fuchsia-300">
+              AI MONITORING
+            </span>
+          </button>
+        </div>
+
+        {/* Protected Route */}
+
+        <div className="mt-5 flex items-center gap-3 px-1">
+          <ShieldCheck className="h-10 w-10 shrink-0 text-emerald-400 drop-shadow-[0_0_16px_rgba(52,211,153,0.75)]" />
+
+          <div className="min-w-0">
+            <h2 className="text-[27px] font-bold leading-none text-white">
+              Protected Route
+            </h2>
+
+            <p className="mt-2 text-[13px] text-cyan-300 drop-shadow-[0_0_8px_rgba(103,232,249,0.55)]">
+              Your safety. Always monitored.
+            </p>
+          </div>
+        </div>
+
+        {/* STEP 2 — JOURNEY SUMMARY */}
+
+        {isJourneyActive ? (
+          <div className="mt-4 grid w-full min-w-0 grid-cols-[minmax(76px,1fr)_68px_68px_40px_50px] items-stretch overflow-hidden rounded-2xl border border-cyan-400/20 bg-[#061329]/95">
+            {/* JOURNEY ACTIVE */}
+            <div className="min-w-0 px-2.5 py-3">
+              <div className="flex items-start gap-2">
+                <span className="mt-1 h-3 w-3 shrink-0 rounded-full bg-emerald-400 shadow-[0_0_14px_rgba(52,211,153,0.95)]" />
+                <div className="min-w-0">
+                  <p className="text-[8px] font-bold uppercase leading-3 tracking-[0.02em] text-lime-300">
+                    JOURNEY ACTIVE
+                  </p>
+                  <p className="mt-1 text-[7px] leading-3 text-cyan-200">
+                    Started at
+                  </p>
+                  <p className="text-[8px] font-semibold leading-3 text-cyan-200">
+                    {journeyStartTime}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* DURATION */}
+            <div className="flex min-w-0 flex-col items-center justify-center border-l border-white/10 px-1.5 py-3">
+              <p className="text-[7px] font-semibold uppercase tracking-[0.02em] text-fuchsia-300">
+                DURATION
+              </p>
+              <p className="mt-2 whitespace-nowrap text-[11px] font-semibold text-white">
+                {journeyDuration}
+              </p>
+            </div>
+
+            {/* DISTANCE */}
+            <div className="flex min-w-0 flex-col items-center justify-center border-l border-white/10 px-1.5 py-3">
+              <p className="text-[7px] font-semibold uppercase tracking-[0.02em] text-cyan-300">
+                DISTANCE
+              </p>
+              <p className="mt-2 whitespace-nowrap text-[11px] font-semibold text-white">
+                {distanceKm > 0 ? `${distanceKm.toFixed(2)} km` : "0.00 km"}
+              </p>
+            </div>
+
+            {/* STOP JOURNEY */}
+            <button
+              type="button"
+              onClick={() => setShowEndJourneyConfirm(true)}
+              aria-label="Stop Journey"
+              title="Stop Journey"
+              className="my-2 flex h-10 w-10 shrink-0 items-center justify-center self-center rounded-xl border border-rose-400/40 bg-[#16070c]/95 text-rose-200 shadow-[0_0_14px_rgba(244,63,94,0.20)] transition hover:brightness-110 active:scale-95"
+            >
+              <Square size={13} strokeWidth={0} fill="currentColor" />
+            </button>
+
+            {/* LIVE */}
+            <button
+              type="button"
+              onClick={() => setShowLiveStatus(true)}
+              aria-label="Live journey status"
+              className="my-2 mr-2 flex h-10 w-[50px] shrink-0 items-center justify-center self-center rounded-xl bg-rose-600 text-[10px] font-bold text-white shadow-[0_0_18px_rgba(225,29,72,0.32)] transition hover:brightness-110 active:scale-95"
+            >
+              LIVE
+            </button>
+          </div>
+        ) : (
+          <div className="mt-4 flex w-full min-w-0 items-center justify-between gap-3 rounded-2xl border border-cyan-400/20 bg-[#061329]/95 px-3 py-3">
+            <div className="flex min-w-0 items-center gap-2">
+              <span className="h-3 w-3 shrink-0 rounded-full bg-slate-500" />
+              <div className="min-w-0">
+                <p className="text-[8px] font-bold uppercase tracking-[0.04em] text-slate-300">
+                  NO ACTIVE JOURNEY
+                </p>
+                <p className="mt-1 text-[8px] text-white/45">
+                  Start a protected journey
+                </p>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => {
+                const startedAt = Date.now();
+                const newId =
+                  typeof crypto !== "undefined" && "randomUUID" in crypto
+                    ? crypto.randomUUID()
+                    : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+
+                setJourneyId(newId);
+                setJourneyStartedAt(startedAt);
+                setElapsedSeconds(0);
+                setDistanceKm(0);
+                setUserLocation(null);
+                setJourneyStartLocation(userLocation);
+                setLocationTracking(true);
+                setLocationError("");
+                setIsJourneyActive(true);
+
+                try {
+                  window.localStorage.setItem(
+                    JOURNEY_STORAGE_KEY,
+                    JSON.stringify({
+                      isJourneyActive: true,
+                      journeyStartedAt: startedAt,
+                      journeyId: newId,
+                      currentLocation: null,
+                      journeyStartLocation: null,
+                      distanceKm: 0,
+                      savedAt: Date.now(),
+                    })
+                  );
+                } catch {
+                  // Journey continues in memory if persistence is unavailable.
+                }
+              }}
+              aria-label="Start Journey"
+              title="Start Journey"
+              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-cyan-500 text-white shadow-[0_0_18px_rgba(34,211,238,0.35)] transition hover:bg-cyan-400 active:scale-95"
+            >
+              <Play size={17} fill="currentColor" strokeWidth={1.5} />
+            </button>
+          </div>
+        )}
+
+        {/* STEP 3 — MAP AREA ONLY */}
+
+        <div ref={mapContainerRef} className="relative mt-3 h-[430px] w-full min-w-0 overflow-hidden rounded-[18px] border border-slate-600/35 bg-[#020a17]">
+          <div
+            className="absolute inset-0 origin-center transition-transform duration-300 ease-out"
+            style={{ transform: `scale(${mapZoom})` }}
+          >
+
+          {/* Destination card */}
+<motion.button
+  type="button"
+  onClick={() => {
+  setShowDestinationSelector(true);
+}}
+  className="absolute left-[14%] top-[6%] z-30 flex h-[58px] w-[104px] flex-col justify-center rounded-[10px] border border-pink-400/45 bg-[#120b19]/92 px-3 py-2 text-left shadow-[0_0_16px_rgba(236,72,153,0.18)] backdrop-blur-md"
+  animate={{ y: [0, -2, 0] }}
+  transition={{ duration: 3.2, repeat: Infinity, ease: "easeInOut" }}
+>
+  <p className="text-[7px] font-semibold uppercase tracking-[0.16em] text-pink-300">
+    DESTINATION
+  </p>
+
+  
+    
+
+    <MapPin
+      size={13}
+      strokeWidth={1.8}
+      className="shrink-0 text-pink-300"
+    />
+  
+</motion.button>
+
+          {/* Destination point */}
+          <motion.div
+            className="absolute left-[35%] top-[16%] z-30 flex h-5 w-5 items-center justify-center rounded-full border border-pink-300/70 bg-pink-500/85 shadow-[0_0_14px_rgba(236,72,153,0.65)]"
+            animate={{ scale: [1, 1.12, 1] }}
+            transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+          >
+            <span className="h-1.5 w-1.5 rounded-full bg-white" />
+          </motion.div>
+
+          {/* Start card */}
+          <motion.div
+            className="absolute bottom-[7%] right-[19%] z-30 flex h-[58px] w-[104px] flex-col justify-center rounded-[10px] border border-emerald-400/45 bg-[#071714]/92 px-3 py-2 shadow-[0_0_16px_rgba(16,185,129,0.18)] backdrop-blur-md"
+            animate={{ y: [0, -2, 0] }}
+            transition={{ duration: 3.4, repeat: Infinity, ease: "easeInOut" }}
+          >
+            <p className="text-[7px] font-semibold uppercase tracking-[0.16em] text-emerald-300">
+              {isJourneyActive ? "CURRENT LOCATION" : "START"}
+            </p>
+            
+              
+            
+          </motion.div>
+
+          {/* Start point */}
+          {userLocation && (
+  <motion.div
+            className="absolute bottom-[4%] right-[39%] z-30 h-4 w-4 rounded-full border border-emerald-300/90 bg-emerald-400/90 shadow-[0_0_14px_rgba(16,185,129,0.70)]"
+            animate={{ scale: [1, 1.16, 1] }}
+            transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+          />
+)}
+          {/* Single moving arrow — directly animated along the exact visible route */}
+          <svg
+            className="pointer-events-none absolute inset-0 z-40 h-full w-full overflow-visible"
+            viewBox="0 0 400 430"
+            preserveAspectRatio="none"
+            aria-hidden="true"
+          >
+            <defs>
+              <filter
+                id="moving-route-arrow-glow"
+                x="-100%"
+                y="-100%"
+                width="300%"
+                height="300%"
+              >
+                <feGaussianBlur stdDeviation="5" />
+              </filter>
+            </defs>
+
+            <g>
+              <animateMotion
+                dur="8s"
+                repeatCount="indefinite"
+                rotate="auto"
+                calcMode="linear"
+                path="M280 390 C235 365 215 335 225 302 C238 265 218 238 195 214 C175 193 170 162 181 128 C188 101 170 78 142 62"
+              />
+
+              <circle
+                r="13"
+                fill="#ff3046"
+                opacity="0.30"
+                filter="url(#moving-route-arrow-glow)"
+              />
+
+              <path
+                d="M 12 0 L -7 -8 L -2 0 L -7 8 Z"
+                fill="#ff3046"
+                stroke="#ffd7dc"
+                strokeWidth="1.2"
+                strokeLinejoin="round"
+              />
+
+              <path
+                d="M -2 0 L 7 0"
+                stroke="#ffffff"
+                strokeWidth="1"
+                strokeLinecap="round"
+                opacity="0.95"
+              />
+            </g>
+          </svg>
+
+          </div>
+
+          {/* Map controls */}
+          <div className="absolute bottom-4 right-3 z-40 flex flex-col gap-2">
+            <MapButton symbol="⊙" onClick={() => setShowLocationPermissionIntro(true)} />
+            <MapButton
+              symbol="+"
+              onClick={() => setMapZoom((zoom) => Math.min(1.3, Number((zoom + 0.1).toFixed(2))))}
+            />
+            <MapButton
+              symbol="−"
+              onClick={() => setMapZoom((zoom) => Math.max(0.85, Number((zoom - 0.1).toFixed(2))))}
+            />
+          </div>
+        </div>
+
+        {/* STEP 4 — LIVE MONITORING + JOURNEY PROGRESS + SOS */}
+        {/* CURRENT DESTINATION */}
+<div className="mt-3 w-full rounded-2xl border border-cyan-400/15 bg-[#061329]/95 px-4 py-4 shadow-[0_0_18px_rgba(34,211,238,0.08)]">
+  <p className="text-[9px] font-semibold uppercase tracking-[0.12em] text-pink-300">
+    CURRENT DESTINATION
+  </p>
+
+  <div className="mt-3 flex items-center gap-3">
+    <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl border border-pink-400/40 bg-[#07172a]">
+      <MapPin size={24} className="text-pink-400" />
+    </div>
+
+    <div className="min-w-0 flex-1">
+      <p className="break-words text-[14px] font-semibold leading-5 text-white">
+        {destination.split(',')[0]}
+      </p>
+    </div>
+
+    <button
+      type="button"
+      onClick={() => setShowDestinationSelector(true)}
+      className="shrink-0 rounded-xl border border-pink-400/60 px-3 py-2 text-[10px] font-bold uppercase tracking-[0.08em] text-pink-300 transition active:scale-95"
+    >
+      CHANGE
+    </button>
+  </div>
+</div>
+        <div className="mt-3 grid w-full min-w-0 grid-cols-[1.05fr_0.95fr_0.55fr] gap-2">
+          <button
+            type="button"
+            onClick={() => setActiveTab("emergency-contacts")}
+            className="min-w-0 rounded-2xl border border-cyan-400/20 bg-[#061329]/95 px-3 py-3 text-left transition active:scale-[0.99]"
+          >
+            <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-cyan-200">
+              LIVE MONITORING
+            </p>
+
+            <div className="mt-3 grid grid-cols-2 gap-x-3 gap-y-2">
+              {[1, 2, 3, 4, 5].map((contact) => (
+                <span key={contact} className="flex min-w-0 items-center gap-2">
+                  <span className="h-2.5 w-2.5 shrink-0 rounded-full bg-lime-400 shadow-[0_0_10px_rgba(163,230,53,0.85)]" />
+                  <span className="truncate text-[10px] font-medium text-slate-100">
+                    Contact {contact}
+                  </span>
+                </span>
+              ))}
+            </div>
+          </button>
+
+          <div className="min-w-0 rounded-2xl border border-cyan-400/20 bg-[#061329]/95 px-3 py-3">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-cyan-200">
+              JOURNEY PROGRESS
+            </p>
+
+            <p className="mt-3 text-[13px] font-semibold text-white">
+              {totalJourneyDistanceKm > 0
+  ? `${Math.min(
+      100,
+      Math.round((distanceKm / totalJourneyDistanceKm) * 100)
+    )}% Completed`
+  : "0% Completed"}
+            </p>
+
+            <div className="mt-3 h-2 overflow-hidden rounded-full bg-slate-800">
+              <div
+  className="h-full rounded-full bg-cyan-400 shadow-[0_0_12px_rgba(34,211,238,0.8)]"
+  style={{
+    width: `${Math.min(
+      100,
+      totalJourneyDistanceKm > 0
+        ? Math.round((distanceKm / totalJourneyDistanceKm) * 100)
+        : 0
+    )}%`,
+  }}
+/>
+            </div>
+
+            <p className="mt-2 text-right text-[9px] text-cyan-200">
+              {distanceKm.toFixed(2)} km / {totalJourneyDistanceKm.toFixed(2)} km
+            </p>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setActiveTab("sos")}
+            className="flex min-w-0 flex-col items-center justify-center rounded-2xl border border-rose-500/50 bg-[#16070c]/95 px-2 py-3 text-white shadow-[0_0_20px_rgba(244,63,94,0.18)] transition active:scale-95"
+          >
+            <span className="rounded-full border-2 border-rose-400 px-5 py-2 text-[16px] font-bold text-rose-100 shadow-[0_0_16px_rgba(244,63,94,0.65)]">
+              SOS
+            </span>
+            <span className="mt-2 text-[9px] font-bold uppercase tracking-[0.12em] text-white">
+              EMERGENCY
+            </span>
+          </button>
+        </div>
+
+        {/* Quick Actions */}
+        <div className="mt-3 w-full rounded-2xl border border-cyan-400/20 bg-[#061329]/95 p-3">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-cyan-200">
+            QUICK ACTIONS
+          </p>
+
+          <div className="mt-3 grid grid-cols-4 gap-2">
+            {[
+              ["↗", "Share Live", "Location", "with contacts"],
+              ["◉", "Call Concierge", "", "Available 24/7"],
+              ["◈", "Report Incident", "", "Silent & Secure"],
+              ["♩", "Record Audio", "", "Evidence Vault"],
+            ].map(([icon, line1, line2, sub], index) => (
+              <button
+                key={index}
+                type="button"
+                onClick={() =>
+                  setActiveTab(
+                    ["emergency-contacts", "ai", "sos", "profile"][index],
+                  )
+                }
+                className="min-w-0 rounded-xl border border-cyan-400/15 bg-[#07172a] px-2 py-3 text-left transition active:scale-[0.98]"
+              >
+                <div className="text-[18px] text-white">{icon}</div>
+                <p className="mt-2 truncate text-[9px] font-semibold text-white">{line1}</p>
+                {line2 && (
+                  <p className="truncate text-[9px] font-semibold text-white">{line2}</p>
+                )}
+                <p className="mt-1 truncate text-[8px] text-cyan-200">{sub}</p>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* AI Safety Tip */}
+        <motion.button
+          type="button"
+          onClick={() => setShowSafetyTip(true)}
+          className="mt-3 flex w-full items-center gap-3 rounded-2xl border border-fuchsia-500/30 bg-[#100b22]/95 px-3 py-3 text-left shadow-[0_0_18px_rgba(168,85,247,0.10)] transition active:scale-[0.99]"
+          animate={{ y: [0, -1, 0] }}
+          transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut" }}
+          aria-label="Open AI safety tip"
+        >
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-fuchsia-400/40 bg-fuchsia-500/10 text-lg text-fuchsia-300">
+            ✦
+          </div>
+
+          <div className="min-w-0 flex-1">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-fuchsia-300">
+              AI SAFETY TIP
+            </p>
+            <p className="mt-1 text-[10px] leading-4 text-white">
+              Stay aware of your surroundings and keep your phone accessible.
+            </p>
+          </div>
+
+          <span className="shrink-0 text-xl text-fuchsia-300">›</span>
+        </motion.button>
+
+        {/* STEP 4 COMPLETE */}
+      </div>
+    </GlassCard>
+{/* DESTINATION SELECTOR */}
+{showDestinationSelector && (
+  <div
+    className="fixed inset-0 z-[260] flex items-center justify-center bg-black/70 px-5 backdrop-blur-sm"
+    onClick={() => setShowDestinationSelector(false)}
+  >
+    <div
+      className="w-full max-w-[340px] rounded-[26px] border border-pink-400/20 bg-[#0d1420] p-5 shadow-[0_0_30px_rgba(236,72,153,0.16)]"
+      onClick={(event) => event.stopPropagation()}
+    >
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-[10px] font-semibold uppercase tracking-[0.30em] text-pink-300">
+            DESTINATION
+          </p>
+          <h3 className="mt-2 text-[22px] font-bold text-white">
+            Where are you going?
+          </h3>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => setShowDestinationSelector(false)}
+          className="flex h-9 w-9 items-center justify-center rounded-xl border border-white/10 bg-white/[0.04] text-white/60"
+          aria-label="Close destination selector"
+        >
+          <X size={16} />
+        </button>
+      </div>
+      {isEnteringSpecificDestination && (
+<div className="mb-4">
+    <input
+      type="text"
+      value={specificDestination}
+      onChange={(event) =>
+        setSpecificDestination(event.target.value)
+      }
+      placeholder="Enter your destination"
+      className="w-full rounded-xl border border-pink-400/20 bg-[#07172a] px-4 py-3 text-[11px] text-white outline-none placeholder:text-white/35 focus:border-pink-400/50"
+      autoFocus
+    />
+    {destinationSuggestions.length > 0 && (
+      <div className="mt-2 overflow-hidden rounded-xl border border-pink-400/15 bg-[#07172a]">
+        {destinationSuggestions.map((suggestion, index) => (
+          <button
+            key={`${suggestion.latitude}-${suggestion.longitude}-${index}`}
+            type="button"
+            onClick={() => {
+              setSpecificDestination(suggestion.formatted);
+              setDestination(suggestion.formatted);
+              setDestinationLocation({
+                latitude: suggestion.latitude,
+                longitude: suggestion.longitude,
+              });
+              setDestinationSuggestions([]);
+              setIsEnteringSpecificDestination(false);
+              setShowDestinationSelector(false);
+            }}
+            className="w-full border-b border-white/5 px-4 py-3 text-left text-[11px] text-white last:border-b-0"
+          >
+            {suggestion.formatted}
+          </button>
+        ))}
+      </div>
+    )}
+
+    <button
+      type="button"
+     onClick={async () => {
+  const typedDestination = specificDestination.trim();
+
+ if (!typedDestination) return;
+
+setIsGeocodingDestination(true);
+
+try {
+    const response = await fetch(
+      `/api/geocode?q=${encodeURIComponent(typedDestination)}`
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      console.error("SWM destination geocoding failed:", data);
+      return;
+    }
+
+    setDestination(typedDestination);
+    setDestinationLocation({
+      latitude: data.latitude,
+      longitude: data.longitude,
+    });
+    setIsEnteringSpecificDestination(false);
+    setShowDestinationSelector(false);
+ } catch (error) {
+    console.error("SWM destination geocoding error:", error);
+  } finally {
+    setIsGeocodingDestination(false);
+  }
+}}
+      className="mt-2 w-full rounded-xl bg-pink-500 px-4 py-3 text-[10px] font-bold uppercase tracking-[0.12em] text-white transition active:scale-[0.98]"
+    >
+      {isGeocodingDestination ? "Finding Destination..." : "Set Destination"}
+    </button>
+  </div>
+)}
+      <div className="mt-5 space-y-2">
+        {["Home", "Work", "Specific Destination"].map((place) => (
+          <button
+            key={place}
+            type="button"
+           onClick={() => {
+  if (place === "Specific Destination") {
+    setSpecificDestination("");
+    setIsEnteringSpecificDestination(true);
+    return;
+  }
+
+  setDestination(place);
+  setShowDestinationSelector(false);
+}}
+            className="flex w-full items-center gap-3 rounded-xl border border-pink-400/15 bg-[#07172a] px-4 py-3 text-left transition active:scale-[0.98]"
+          >
+            <MapPin size={16} className="text-pink-300" />
+            <span className="text-[11px] font-semibold text-white">
+              {place}
+            </span>
+          </button>
+        ))}
+      </div>
+
+      <button
+        type="button"
+        onClick={() => setShowDestinationSelector(false)}
+        className="mt-4 w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-[10px] font-semibold text-white/60"
+      >
+        Cancel
+      </button>
+    </div>
+  </div>
+)}
+    {/* END JOURNEY CONFIRMATION */}
+    {showEndJourneyConfirm && (
+      <div
+        className="fixed inset-0 z-[270] flex items-center justify-center bg-black/70 px-5 backdrop-blur-sm"
+        onClick={() => setShowEndJourneyConfirm(false)}
+      >
+        <div
+          className="w-full max-w-[340px] rounded-[26px] border border-rose-400/20 bg-[#0d1420] p-5 shadow-[0_0_30px_rgba(244,63,94,0.16)]"
+          onClick={(event) => event.stopPropagation()}
+        >
+          <p className="text-[10px] font-semibold uppercase tracking-[0.30em] text-rose-300">
+            END JOURNEY
+          </p>
+
+          <h3 className="mt-2 text-[22px] font-bold text-white">
+            Finish this journey?
+          </h3>
+
+          <p className="mt-2 text-[10px] leading-5 text-white/45">
+            Your live journey timer will stop and this journey will be marked as completed.
+          </p>
+
+          <div className="mt-5 grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              onClick={() => setShowEndJourneyConfirm(false)}
+              className="rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-[10px] font-semibold text-white/60 transition hover:bg-white/[0.08]"
+            >
+              Keep Journey
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                setIsJourneyActive(false);
+                setLocationTracking(false);
+                setShowEndJourneyConfirm(false);
+                setShowLiveStatus(false);
+
+                void syncJourneyToSupabase("completed");
+
+                try {
+                  window.localStorage.setItem(
+                    JOURNEY_STORAGE_KEY,
+                    JSON.stringify({
+                      isJourneyActive: false,
+                      journeyId: getOrCreateJourneyId(),
+                      journeyStartedAt,
+                      endedAt: Date.now(),
+                      savedAt: Date.now(),
+                    })
+                  );
+                } catch {
+                  // Keep the completed state in memory if persistence is unavailable.
+                }
+              }}
+              className="rounded-xl bg-rose-600 px-4 py-3 text-[10px] font-bold text-white shadow-[0_0_18px_rgba(225,29,72,0.28)] transition hover:brightness-110 active:scale-95"
+            >
+              End Journey
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
+
+    {/* LIVE JOURNEY STATUS MODAL */}
+    {showLiveStatus && (
+      <div
+        className="fixed inset-0 z-[260] flex items-center justify-center bg-black/70 px-5 backdrop-blur-sm"
+        onClick={() => setShowLiveStatus(false)}
+      >
+        <div
+          className="w-full max-w-[340px] rounded-[26px] border border-rose-400/20 bg-[#0d1420] p-5 shadow-[0_0_30px_rgba(244,63,94,0.16)]"
+          onClick={(event) => event.stopPropagation()}
+        >
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.30em] text-pink-300">
+                LIVE JOURNEY
+              </p>
+
+              <h3 className="mt-2 text-[22px] font-bold text-white">
+                Live Monitoring
+              </h3>
+
+              <p className="mt-2 text-[10px] leading-5 text-white/45">
+                Your journey is currently live and your safety status is being monitored.
+              </p>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setShowLiveStatus(false)}
+              aria-label="Close live journey status"
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] text-white/70"
+            >
+              <X size={17} />
+            </button>
+          </div>
+
+          <div className="mt-5 space-y-3">
+            <div className="rounded-2xl border border-emerald-400/10 bg-emerald-400/[0.035] p-4">
+              <div className="flex items-center gap-2">
+                <span className="h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_10px_rgba(52,211,153,0.8)]" />
+                <span className="text-[10px] font-semibold text-emerald-300">
+                  Journey Active
+                </span>
+              </div>
+              <p className="mt-2 text-[9px] leading-4 text-white/40">
+                Live protection and journey monitoring are active.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2">
+              <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-3">
+                <p className="text-[8px] uppercase tracking-[0.14em] text-fuchsia-300">
+                  Duration
+                </p>
+                <p className="mt-2 text-[12px] font-semibold text-white">
+                  {journeyDuration}
+                </p>
+              </div>
+
+              <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-3">
+                <p className="text-[8px] uppercase tracking-[0.14em] text-cyan-300">
+                  Distance
+                </p>
+                <p className="mt-2 text-[12px] font-semibold text-white">
+                  12.4 km
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setShowLiveStatus(false)}
+            className="mt-5 w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-[10px] font-semibold text-white/60 transition hover:bg-white/[0.08]"
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    )}
+
+    {/* CURRENT LOCATION STATUS MODAL */}
+    {showLocationPermissionIntro && (
+      <div
+        className="fixed inset-0 z-[275] flex items-center justify-center bg-black/70 px-5 backdrop-blur-sm"
+        onClick={() => {
+          if (!locationRequesting) setShowLocationPermissionIntro(false);
+        }}
+      >
+        <div
+          className="w-full max-w-[340px] rounded-[26px] border border-cyan-400/20 bg-[#0d1420] p-5 shadow-[0_0_30px_rgba(34,211,238,0.14)]"
+          onClick={(event) => event.stopPropagation()}
+        >
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.30em] text-cyan-300">
+                JOURNEY SAFETY
+              </p>
+              <h3 className="mt-2 text-[22px] font-bold text-white">
+                Enable Location
+              </h3>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setShowLocationPermissionIntro(false)}
+              disabled={locationRequesting}
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] text-white/70 disabled:opacity-40"
+              aria-label="Close location permission"
+            >
+              <X size={17} />
+            </button>
+          </div>
+
+          <p className="mt-3 text-[11px] leading-5 text-white/55">
+            SWM needs your location to monitor your protected journey and keep your journey status accurate.
+          </p>
+
+          {locationError && (
+            <div className="mt-3 rounded-xl border border-rose-400/20 bg-rose-400/[0.06] px-3 py-2 text-[10px] leading-4 text-rose-200">
+              {locationError}
+            </div>
+          )}
+
+          <button
+            type="button"
+            onClick={() => {
+              setShowLocationPermissionIntro(false);
+              requestCurrentLocation();
+            }}
+            disabled={locationRequesting}
+            className="mt-5 w-full rounded-2xl bg-cyan-400 px-4 py-3 text-[11px] font-bold text-slate-900 shadow-[0_0_20px_rgba(34,211,238,0.18)] transition hover:brightness-105 active:scale-[0.99] disabled:opacity-60"
+          >
+            {locationRequesting ? "Requesting Location…" : "Enable Location"}
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setShowLocationPermissionIntro(false)}
+            disabled={locationRequesting}
+            className="mt-2 w-full rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-[11px] font-semibold text-white/60 transition hover:bg-white/[0.08] disabled:opacity-40"
+          >
+            Not Now
+          </button>
+
+          <p className="mt-3 text-center text-[9px] leading-4 text-white/30">
+            Your browser may ask for permission after you choose Enable Location.
+          </p>
+        </div>
+      </div>
+    )}
+
+    {showLocationStatus && (
+      <div
+        className="fixed inset-0 z-[260] flex items-center justify-center bg-black/70 px-5 backdrop-blur-sm"
+        onClick={() => setShowLocationStatus(false)}
+      >
+        <div
+          className="w-full max-w-[340px] rounded-[26px] border border-cyan-400/20 bg-[#0d1420] p-5 shadow-[0_0_30px_rgba(34,211,238,0.14)]"
+          onClick={(event) => event.stopPropagation()}
+        >
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.30em] text-cyan-300">
+                JOURNEY MAP
+              </p>
+
+              <h3 className="mt-2 text-[22px] font-bold text-white">
+                Current Location
+              </h3>
+
+              <p className="mt-2 text-[10px] leading-5 text-white/45">
+                {locationRequesting
+                  ? "Requesting your current device location…"
+                  : locationError
+                    ? locationError
+                    : userLocation
+                      ? "Your current device location is available for this protected journey."
+                      : "Tap the location control on the map to request your current device location."}
+              </p>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setShowLocationStatus(false)}
+              aria-label="Close current location status"
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] text-white/70"
+            >
+              <X size={17} />
+            </button>
+          </div>
+
+          <div className="mt-3 rounded-xl border border-white/10 bg-white/[0.025] px-3 py-2 text-[9px] text-white/45">
+            {supabaseSyncStatus === "syncing"
+              ? "Journey data syncing securely…"
+              : supabaseSyncStatus === "synced"
+                ? "Journey data synced."
+                : supabaseSyncStatus === "error"
+                  ? "Journey is running. Cloud sync will retry on the next update."
+                  : "Journey cloud sync ready."}
+          </div>
+
+          <div className="mt-5 rounded-2xl border border-cyan-400/10 bg-cyan-400/[0.035] p-4">
+            <div className="flex items-center gap-2">
+              <span className="h-2 w-2 rounded-full bg-cyan-400 shadow-[0_0_10px_rgba(34,211,238,0.8)]" />
+              <span className="text-[10px] font-semibold text-cyan-300">
+                {locationRequesting
+                  ? "Getting Location…"
+                  : userLocation
+                    ? "Location Active"
+                    : "Location Not Yet Requested"}
+              </span>
+            </div>
+
+            <p className="mt-2 text-[9px] leading-4 text-white/40">
+              {userLocation
+                ? `GPS accuracy ±${Math.round(userLocation.accuracy)} m${locationTracking ? " • Live updates on" : ""}`
+                : locationError || "No GPS position has been obtained yet."}
+            </p>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setShowLocationStatus(false)}
+            className="mt-5 w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-[10px] font-semibold text-white/60 transition hover:bg-white/[0.08]"
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    )}
+
+    {/* AI SAFETY TIP MODAL */}
+    {showSafetyTip && (
+      <div
+        className="fixed inset-0 z-[260] flex items-center justify-center bg-black/70 px-5 backdrop-blur-sm"
+        onClick={() => setShowSafetyTip(false)}
+      >
+        <div
+          className="w-full max-w-[340px] rounded-[26px] border border-fuchsia-400/20 bg-[#0d1420] p-5 shadow-[0_0_30px_rgba(168,85,247,0.16)]"
+          onClick={(event) => event.stopPropagation()}
+        >
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.30em] text-fuchsia-300">
+                PERSONAL SAFETY AI
+              </p>
+              <h3 className="mt-2 text-[22px] font-bold text-white">
+                AI Safety Tip
+              </h3>
+              <p className="mt-2 text-[10px] leading-5 text-white/45">
+                Stay aware of your surroundings and keep your phone accessible.
+              </p>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setShowSafetyTip(false)}
+              aria-label="Close AI safety tip"
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] text-white/70"
+            >
+              <X size={17} />
+            </button>
+          </div>
+
+          <div className="mt-5 rounded-2xl border border-fuchsia-400/10 bg-fuchsia-400/[0.035] p-4">
+            <div className="flex items-center gap-2">
+              <span className="h-2 w-2 rounded-full bg-fuchsia-400 shadow-[0_0_10px_rgba(217,70,239,0.8)]" />
+              <span className="text-[10px] font-semibold text-fuchsia-300">
+                Safety reminder
+              </span>
+            </div>
+            <p className="mt-2 text-[10px] leading-5 text-white/60">
+              Keep your phone accessible, stay aware of your surroundings, and follow your protected route.
+            </p>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setShowSafetyTip(false)}
+            className="mt-5 w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-[10px] font-semibold text-white/60 transition hover:bg-white/[0.08]"
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    )}
+    </>
+  );
+}
+
+function MapButton({ symbol, onClick }: { symbol: string; onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label={symbol === "⊙" ? "Journey location" : symbol === "+" ? "Journey map zoom in" : "Journey map zoom out"}
+      className="flex h-8 w-8 items-center justify-center rounded-[9px] border border-slate-500/35 bg-[#07111f]/92 text-base text-slate-200 shadow-[0_0_16px_rgba(0,0,0,0.25)] backdrop-blur-xl transition active:scale-95"
+    >
+      {symbol}
+    </button>
+  );
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

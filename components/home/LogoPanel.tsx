@@ -65,8 +65,8 @@ export default function LogoPanel() {
           <Image
             src="/images/swm-logo.png"
             alt="Stay With Me"
-            width={210}
-            height={210}
+            width={260}
+            height={260}
             priority
             className="mx-auto object-contain"
           />

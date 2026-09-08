@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 
+
+
 import { NavigationProvider } from "../components/navigation/NavigationContext";
 import NavigationStack from "../components/navigation/NavigationStack";
 
@@ -13,9 +15,32 @@ import JourneyHome from "../components/journey/JourneyHome";
 import SOSHome from "../components/sos/SOSHome";
 import ProfileHome from "../components/profile/ProfileHome";
 import EmergencyContacts from "../components/sos/EmergencyContacts";
-
+import LiveProtectionCommandCenter from "../components/home/LiveProtectionCommandCenter";
 export default function Page() {
   const [activeTab, setActiveTab] = useState("home");
+
+  const startJourney = () => {
+    const startedAt = Date.now();
+
+    try {
+      window.localStorage.setItem(
+        "swm_active_journey",
+        JSON.stringify({
+          isJourneyActive: true,
+          journeyStartedAt: startedAt,
+          journeyId: null,
+          currentLocation: null,
+          journeyStartLocation: null,
+          distanceKm: 0,
+          savedAt: Date.now(),
+        })
+      );
+    } catch {
+      // Journey will still open if localStorage is unavailable.
+    }
+
+    setActiveTab("journey");
+  };
 
   return (
     <NavigationProvider
@@ -36,6 +61,7 @@ export default function Page() {
             <AIHome
               activeTab={activeTab}
               setActiveTab={setActiveTab}
+              onStartJourney={startJourney}
             />
           )}
 
@@ -45,7 +71,11 @@ export default function Page() {
               setActiveTab={setActiveTab}
             />
           )}
-
+{activeTab === "live-protection" && (
+  <LiveProtectionCommandCenter
+    onBack={() => setActiveTab("journey")}
+  />
+)}
           {activeTab === "sos" && (
             <SOSHome
               activeTab={activeTab}
@@ -87,3 +117,4 @@ export default function Page() {
     </NavigationProvider>
   );
 }
+

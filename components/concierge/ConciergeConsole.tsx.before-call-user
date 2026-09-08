@@ -1,0 +1,249 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { supabase } from "../../lib/supabase";
+
+type Incident = {
+  id: string;
+  user_id: string;
+  title: string;
+  description: string | null;
+  created_at: string;
+  notification_status: string;
+  notification_contact_count: number;
+  concierge_status: string;
+};
+
+export default function ConciergeConsole() {
+  const [incidents, setIncidents] = useState<Incident[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const loadIncidents = async () => {
+    const { data, error } = await supabase
+      .from("incident_timeline")
+      .select(
+        "id, user_id, title, description, created_at, notification_status, notification_contact_count, concierge_status"
+      )
+      .in("concierge_status", ["activated", "assigned"])
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.error("Unable to load Concierge incidents:", error);
+      setLoading(false);
+      return;
+    }
+
+    setIncidents(data ?? []);
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    loadIncidents();
+
+    const interval = window.setInterval(loadIncidents, 5000);
+
+
+  return () => window.clearInterval(interval);
+  }, []);
+
+  const markSafe = async (incidentId: string) => {
+    const { error } = await supabase
+      .from("incident_timeline")
+      .update({
+        concierge_status: "resolved",
+      })
+      .eq("id", incidentId);
+
+    if (error) {
+      console.error("Unable to resolve incident:", error);
+      return;
+    }
+
+    await loadIncidents();
+  };
+
+  const takeIncident = async (incidentId: string) => {
+    const { error } = await supabase
+      .from("incident_timeline")
+      .update({
+        concierge_status: "assigned",
+      })
+      .eq("id", incidentId);
+
+    if (error) {
+      console.error("Unable to take incident:", error);
+      return;
+    }
+
+    await loadIncidents();
+  };
+
+  return (
+    <div className="min-h-screen bg-[#050B16] p-6 text-white">
+      <div className="mx-auto max-w-5xl">
+
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-cyan-300">
+              SWM Human Response
+            </p>
+
+            <h1 className="mt-2 text-3xl font-bold">
+              Human Concierge
+            </h1>
+
+            <p className="mt-2 text-sm text-white/50">
+              Live safety incidents requiring human attention.
+            </p>
+          </div>
+
+          <div className="flex items-center gap-2 rounded-full border border-emerald-400/20 bg-emerald-400/[0.08] px-4 py-2">
+            <span className="h-2 w-2 animate-pulse rounded-full bg-emerald-400" />
+            <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-emerald-300">
+              Concierge Online
+            </span>
+          </div>
+        </div>
+
+        <div className="mt-8">
+
+          {loading && (
+            <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-8 text-center text-white/50">
+              Loading active incidents...
+            </div>
+          )}
+
+          {!loading && incidents.length === 0 && (
+            <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-10 text-center">
+              <div className="text-4xl">?</div>
+
+              <h2 className="mt-4 text-xl font-bold">
+                No active SOS incidents
+              </h2>
+
+              <p className="mt-2 text-sm text-white/45">
+                The Human Concierge team is standing by.
+              </p>
+            </div>
+          )}
+
+          <div className="space-y-4">
+            {incidents.map((incident) => (
+              <div
+                key={incident.id}
+                className="rounded-3xl border border-red-400/20 bg-red-400/[0.05] p-6 shadow-[0_0_35px_rgba(248,113,113,0.08)]"
+              >
+                <div className="flex items-start justify-between gap-4">
+
+                  <div>
+                    <div className="flex items-center gap-3">
+                      <span className="flex h-10 w-10 items-center justify-center rounded-full bg-red-400/15 text-xl">
+                        ??
+                      </span>
+
+                      <div>
+                        <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-red-300">
+                          Active SOS
+                        </p>
+
+                        <h2 className="mt-1 text-xl font-bold">
+                          {incident.title}
+                        </h2>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="rounded-full border border-cyan-300/20 bg-cyan-300/[0.06] px-3 py-1.5 text-[9px] font-bold uppercase tracking-[0.15em] text-cyan-200">
+                    {incident.concierge_status === "assigned"
+                      ? "Incident Taken"
+                      : "Awaiting Concierge"}
+                  </div>
+                </div>
+
+                <div className="mt-6 grid gap-3 sm:grid-cols-3">
+
+                  <div className="rounded-2xl border border-white/10 bg-black/10 p-4">
+                    <p className="text-[9px] font-bold uppercase tracking-[0.15em] text-white/35">
+                      Incident
+                    </p>
+
+                    <p className="mt-2 break-all text-[11px] text-white/70">
+                      {incident.id}
+                    </p>
+                  </div>
+
+                  <div className="rounded-2xl border border-white/10 bg-black/10 p-4">
+                    <p className="text-[9px] font-bold uppercase tracking-[0.15em] text-white/35">
+                      Emergency Contacts
+                    </p>
+
+                    <p className="mt-2 text-xl font-bold text-white">
+                      {incident.notification_contact_count}
+                    </p>
+                  </div>
+
+                  <div className="rounded-2xl border border-white/10 bg-black/10 p-4">
+                    <p className="text-[9px] font-bold uppercase tracking-[0.15em] text-white/35">
+                      Activated
+                    </p>
+
+                    <p className="mt-2 text-sm font-semibold text-white/75">
+                      {new Date(incident.created_at).toLocaleString()}
+                    </p>
+                  </div>
+
+                </div>
+
+                {incident.description && (
+                  <div className="mt-4 rounded-2xl border border-white/10 bg-black/10 p-4">
+                    <p className="text-[9px] font-bold uppercase tracking-[0.15em] text-white/35">
+                      Incident Details
+                    </p>
+
+                    <p className="mt-2 text-sm leading-6 text-white/65">
+                      {incident.description}
+                    </p>
+                  </div>
+                )}
+
+                <div className="mt-5 flex gap-3">
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (incident.concierge_status !== "assigned") {
+                        takeIncident(incident.id);
+                      }
+                    }}
+                    disabled={incident.concierge_status === "assigned"}
+                    className="flex-1 rounded-2xl border border-cyan-300/25 bg-cyan-300/[0.08] py-3.5 text-[11px] font-bold uppercase tracking-[0.12em] text-cyan-200 disabled:cursor-default disabled:opacity-60"
+                  >
+                    {incident.concierge_status === "assigned"
+                      ? "Incident Taken"
+                      : "Take Incident"}
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => markSafe(incident.id)}
+                    className="flex-1 rounded-2xl border border-emerald-300/20 bg-emerald-300/[0.06] py-3.5 text-[11px] font-bold uppercase tracking-[0.12em] text-emerald-300"
+                  >
+                    Mark Safe
+                  </button>
+
+                </div>
+
+              </div>
+            ))}
+          </div>
+
+        </div>
+      </div>
+    </div>
+  );
+}
+
+
+
+
+

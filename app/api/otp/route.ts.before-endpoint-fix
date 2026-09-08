@@ -1,0 +1,78 @@
+import { NextResponse } from "next/server";
+
+export async function POST(request: Request) {
+  try {
+    const { mobile } = await request.json();
+
+    if (!mobile) {
+      return NextResponse.json(
+        { error: "Mobile number is required." },
+        { status: 400 }
+      );
+    }
+
+    const apiKey = process.env.SMSHORIZON_API_KEY;
+    const username = process.env.SMSHORIZON_USER;
+    const senderId = process.env.SMSHORIZON_SENDER_ID;
+    const templateId = process.env.SMSHORIZON_TID;
+
+    if (!apiKey || !username || !senderId || !templateId) {
+      return NextResponse.json(
+        { error: "SmsHorizon configuration is incomplete." },
+        { status: 500 }
+      );
+    }
+
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+    const message = `OTP for your new user account registration is: ${otp}`;
+
+    const smsBody = new URLSearchParams({
+      user: username,
+      mobile: mobile.trim(),
+      senderid: senderId,
+      message,
+      tid: templateId,
+      type: "txt",
+    });
+
+    const smsResponse = await fetch(
+      "https://smshorizon.com/api/v2/sendsms",
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          Accept: "application/json",
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body: smsBody.toString(),
+        cache: "no-store",
+      }
+    );
+
+    const smsResult = await smsResponse.json();
+
+    if (!smsResponse.ok) {
+      console.error("SmsHorizon OTP send failed:", smsResult);
+
+      return NextResponse.json(
+        { error: "Unable to send OTP.", details: smsResult },
+        { status: 502 }
+      );
+    }
+
+    console.log("SmsHorizon response:", smsResult);
+
+    return NextResponse.json({
+      success: true,
+      otp,
+    });
+  } catch (error) {
+    console.error("OTP route error:", error);
+
+    return NextResponse.json(
+      { error: "Unable to process OTP request." },
+      { status: 500 }
+    );
+  }
+}

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
 
@@ -501,8 +501,7 @@ export default function SafetyProfile() {
                   size={18}
                   className="
                     shrink-0
-                    text-white/30
-                    group-hover:text-red-300
+                    text-red-400 drop-shadow-[0_0_8px_rgba(255,49,49,0.95)]
                   "
                 />
 
@@ -1061,9 +1060,9 @@ export default function SafetyProfile() {
                               : `Emergency Contact ${index + 1}`}
                         </p>
 
-                        <p className="mt-1 truncate text-[10px] text-white/45">
+                        <p className="mt-1 truncate text-[11px] font-semibold !text-white drop-shadow-[0_0_4px_rgba(255,255,255,0.85)]" style={{ color: "#FFFFFF", opacity: 1 }}>
                           {isAdded
-                            ? `${contact.relationship} • ${contact.phone}`
+                            ? `${contact.relationship} - ${contact.phone}`
                             : "Not added yet"}
                         </p>
 
@@ -1666,3 +1665,7 @@ export default function SafetyProfile() {
     </div>
   );
 }
+
+
+
+

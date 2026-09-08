@@ -1,0 +1,67 @@
+import { NextRequest, NextResponse } from "next/server";
+import { createClient } from "@supabase/supabase-js";
+
+const supabaseAdmin = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+);
+
+export async function POST(request: NextRequest) {
+  try {
+    const body = await request.json();
+
+    const {
+      incidentId,
+      userId,
+      contactCount,
+      latitude,
+      longitude,
+    } = body;
+
+    if (!incidentId) {
+      return NextResponse.json(
+        { error: "Incident ID is required." },
+        { status: 400 }
+      );
+    }
+
+    const { error: updateError } = await supabaseAdmin
+      .from("incident_timeline")
+      .update({
+        concierge_status: "activated",
+      })
+      .eq("id", incidentId);
+
+    if (updateError) {
+      console.error("Unable to update Concierge status:", { message: updateError.message, details: updateError.details, hint: updateError.hint, code: updateError.code });
+
+      return NextResponse.json(
+        { error: "Unable to activate Human Concierge." },
+        { status: 500 }
+      );
+    }
+
+    console.log("HUMAN CONCIERGE INCIDENT RECEIVED:", {
+      incidentId,
+      userId,
+      contactCount,
+      latitude,
+      longitude,
+    });
+
+    return NextResponse.json({
+      success: true,
+      conciergeStatus: "activated",
+      incidentId,
+      message: "Human Concierge has been alerted.",
+    });
+  } catch (error) {
+    console.error("Concierge API error:", error);
+
+    return NextResponse.json(
+      { error: "Unable to activate Human Concierge." },
+      { status: 500 }
+    );
+  }
+}
+

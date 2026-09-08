@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 
@@ -176,20 +176,14 @@ export default function ConciergeStatus() {
           >
             <div className="flex items-center gap-3">
 
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-red-400/30 bg-red-400/10">
-                <Bot
-                  size={21}
-                  strokeWidth={1.8}
-                  className="text-red-400 drop-shadow-[0_0_8px_rgba(248,113,113,0.75)]"
-                />
-              </div>
+              <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-cyan-300/80 bg-cyan-400/15 shadow-[0_0_28px_rgba(34,211,238,0.75)]"><Bot size={32} strokeWidth={2.8} className="text-cyan-200 drop-shadow-[0_0_14px_rgba(34,211,238,1)]" /></div>
 
               <div>
                 <p className="text-[16px] font-bold text-white">
                   AI Concierge
                 </p>
 
-                <p className="mt-0.5 text-[12px] text-white/55">
+                <p className="mt-0.5 text-[12px] text-[#F4D7C5]">
                   Monitoring your journey
                 </p>
               </div>
@@ -212,8 +206,8 @@ export default function ConciergeStatus() {
             >
               <div className="p-4">
                 <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-cyan-300/25 bg-cyan-400/10">
-                    <Bot size={20} className="text-cyan-200" />
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-cyan-300/80 bg-cyan-400/10 shadow-[0_0_22px_rgba(34,211,238,0.75)]">
+                    <Bot size={30} strokeWidth={2.8} className="text-cyan-200 drop-shadow-[0_0_14px_rgba(34,211,238,1)]" />
                   </div>
 
                   <div className="min-w-0 flex-1">
@@ -278,20 +272,14 @@ export default function ConciergeStatus() {
           >
             <div className="flex items-center gap-3">
 
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-red-400/30 bg-red-400/10">
-                <ShieldCheck
-                  size={21}
-                  strokeWidth={1.8}
-                  className="text-red-400 drop-shadow-[0_0_8px_rgba(248,113,113,0.75)]"
-                />
-              </div>
+              <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-emerald-300/80 bg-emerald-400/15 shadow-[0_0_28px_rgba(16,185,129,0.75)]"><ShieldCheck size={32} strokeWidth={2.8} className="text-emerald-200 drop-shadow-[0_0_14px_rgba(16,185,129,1)]" /></div>
 
               <div>
                 <p className="text-[16px] font-bold text-white">
                   Human Concierge
                 </p>
 
-                <p className="mt-0.5 text-[12px] text-white/55">
+                <p className="mt-0.5 text-[12px] text-[#F4D7C5]">
                   Standing by 24/7
                 </p>
               </div>
@@ -314,8 +302,8 @@ export default function ConciergeStatus() {
             >
               <div className="p-4">
                 <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-emerald-300/25 bg-emerald-400/10">
-                    <ShieldCheck size={20} className="text-emerald-200" />
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-emerald-300/80 bg-emerald-400/10 shadow-[0_0_22px_rgba(16,185,129,0.75)]">
+                    <ShieldCheck size={30} strokeWidth={2.8} className="text-emerald-300 drop-shadow-[0_0_14px_rgba(16,185,129,1)]" />
                   </div>
 
                   <div className="min-w-0 flex-1">
@@ -380,20 +368,14 @@ export default function ConciergeStatus() {
           >
             <div className="flex items-center gap-3">
 
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-red-400/30 bg-red-400/10">
-                <Clock3
-                  size={21}
-                  strokeWidth={1.8}
-                  className="text-red-400 drop-shadow-[0_0_8px_rgba(248,113,113,0.75)]"
-                />
-              </div>
+              <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-fuchsia-300/80 bg-fuchsia-400/15 shadow-[0_0_28px_rgba(217,70,239,0.75)]"><Clock3 size={32} strokeWidth={2.8} className="text-fuchsia-200 drop-shadow-[0_0_14px_rgba(217,70,239,1)]" /></div>
 
               <div>
                 <p className="text-[16px] font-bold text-white">
                   Response Time
                 </p>
 
-                <p className="mt-0.5 text-[12px] text-white/55">
+                <p className="mt-0.5 text-[12px] text-[#F4D7C5]">
                   Average response
                 </p>
               </div>
@@ -413,8 +395,8 @@ export default function ConciergeStatus() {
           >
             <div className="p-4">
               <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-cyan-300/25 bg-cyan-400/10">
-                  <Clock3 size={20} className="text-cyan-200" />
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-cyan-300/80 bg-cyan-400/10 shadow-[0_0_22px_rgba(34,211,238,0.75)]">
+                  <Clock3 size={30} strokeWidth={2.8} className="text-fuchsia-300 drop-shadow-[0_0_14px_rgba(217,70,239,1)]" />
                 </div>
 
                 <div className="min-w-0 flex-1">
@@ -489,20 +471,14 @@ export default function ConciergeStatus() {
         >
           <div className="flex items-start gap-3">
 
-            <div className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-red-400/30 bg-red-400/10">
-              <CheckCircle2
-                size={22}
-                strokeWidth={1.8}
-                className="text-red-400 drop-shadow-[0_0_8px_rgba(248,113,113,0.75)]"
-              />
-            </div>
+            <div className="mt-0.5 flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-orange-300/80 bg-orange-400/15 shadow-[0_0_28px_rgba(251,146,60,0.75)]"><CheckCircle2 size={32} strokeWidth={2.8} className="text-orange-200 drop-shadow-[0_0_14px_rgba(251,146,60,1)]" /></div>
 
             <div>
               <p className="text-[17px] font-bold text-white">
                 You're Never Alone
               </p>
 
-              <p className="mt-2 text-[14px] leading-7 text-white/70">
+              <p className="mt-2 text-[14px] leading-7 text-[#F4D7C5]">
                 Your AI Concierge continuously monitors your journey while
                 your Personal Safety Concierge remains available to assist
                 whenever needed.
@@ -519,8 +495,8 @@ export default function ConciergeStatus() {
           >
             <div className="p-4">
               <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-cyan-300/25 bg-cyan-400/10">
-                  <CheckCircle2 size={20} className="text-cyan-200" />
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-cyan-300/80 bg-cyan-400/10 shadow-[0_0_22px_rgba(34,211,238,0.75)]">
+                  <CheckCircle2 size={30} strokeWidth={2.8} className="text-orange-300 drop-shadow-[0_0_14px_rgba(251,146,60,1)]" />
                 </div>
 
                 <div className="min-w-0 flex-1">
@@ -557,3 +533,13 @@ export default function ConciergeStatus() {
     </GlassCard>
   );
 }
+
+
+
+
+
+
+
+
+
+

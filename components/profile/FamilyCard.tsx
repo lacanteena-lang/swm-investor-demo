@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
@@ -12,6 +12,7 @@ import {
 
 import GlassCard from "../ui/GlassCard";
 import PremiumButton from "../ui/PremiumButton";
+import { supabase } from "../../lib/supabase";
 
 type FamilyMember = {
   id: string;
@@ -19,8 +20,6 @@ type FamilyMember = {
   phone: string;
   relation: string;
 };
-
-const FAMILY_MEMBERS_KEY = "swm-family-circle-members";
 
 const primaryContact = {
   name: "Primary Contact",
@@ -36,29 +35,53 @@ export default function FamilyCard() {
   const [phone, setPhone] = useState("");
   const [relation, setRelation] = useState("");
 
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+
+  /* ===================================================== */
+  /* LOAD REAL EMERGENCY CONTACTS                          */
+  /* ===================================================== */
+
   useEffect(() => {
-    try {
-      const saved = window.localStorage.getItem(FAMILY_MEMBERS_KEY);
+    const loadContacts = async () => {
+      try {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
 
-      if (saved) {
-        const parsed = JSON.parse(saved);
-
-        if (Array.isArray(parsed)) {
-          setFamilyMembers(parsed);
+        if (!user) {
+          setFamilyMembers([]);
+          return;
         }
-      }
-    } catch (error) {
-      console.error("Unable to load Family Circle members:", error);
-    }
-  }, []);
 
-  const saveMembers = (members: FamilyMember[]) => {
-    setFamilyMembers(members);
-    window.localStorage.setItem(
-      FAMILY_MEMBERS_KEY,
-      JSON.stringify(members),
-    );
-  };
+        const { data, error } = await supabase
+          .from("emergency_contacts")
+          .select("id, name, phone, relationship")
+          .eq("user_id", user.id)
+          .order("created_at", { ascending: true });
+
+        if (error) {
+          console.error("Unable to load emergency contacts:", error);
+          return;
+        }
+
+        const members: FamilyMember[] = (data ?? []).map((contact) => ({
+          id: contact.id,
+          name: contact.name,
+          phone: contact.phone,
+          relation: contact.relationship,
+        }));
+
+        setFamilyMembers(members);
+      } catch (error) {
+        console.error("Unable to load emergency contacts:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadContacts();
+  }, []);
 
   const openAddMember = () => {
     setName("");
@@ -68,10 +91,15 @@ export default function FamilyCard() {
   };
 
   const closeAddMember = () => {
+    if (saving) return;
     setShowAddMember(false);
   };
 
-  const handleAddMember = () => {
+  /* ===================================================== */
+  /* ADD REAL CONTACT                                      */
+  /* ===================================================== */
+
+  const handleAddMember = async () => {
     const trimmedName = name.trim();
     const trimmedPhone = phone.trim();
     const trimmedRelation = relation.trim();
@@ -81,23 +109,86 @@ export default function FamilyCard() {
       return;
     }
 
-    const newMember: FamilyMember = {
-      id: crypto.randomUUID(),
-      name: trimmedName,
-      phone: trimmedPhone,
-      relation: trimmedRelation || "Family Member",
-    };
+    setSaving(true);
 
-    saveMembers([...familyMembers, newMember]);
-    setShowAddMember(false);
+    try {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user) {
+        alert("Please sign in before adding an emergency contact.");
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from("emergency_contacts")
+        .insert({
+          user_id: user.id,
+          name: trimmedName,
+          relationship: trimmedRelation || "Family Member",
+          phone: trimmedPhone,
+        })
+        .select("id, name, phone, relationship")
+        .single();
+
+      if (error) {
+        console.error("Unable to save emergency contact:", error);
+        alert("Unable to save the emergency contact.");
+        return;
+      }
+
+      const newMember: FamilyMember = {
+        id: data.id,
+        name: data.name,
+        phone: data.phone,
+        relation: data.relationship,
+      };
+
+      setFamilyMembers((current) => [...current, newMember]);
+      setShowAddMember(false);
+    } catch (error) {
+      console.error("Unable to save emergency contact:", error);
+      alert("Unable to save the emergency contact.");
+    } finally {
+      setSaving(false);
+    }
   };
 
-  const removeMember = (id: string) => {
-    const updatedMembers = familyMembers.filter(
-      (member) => member.id !== id,
-    );
+  /* ===================================================== */
+  /* REMOVE REAL CONTACT                                   */
+  /* ===================================================== */
 
-    saveMembers(updatedMembers);
+  const removeMember = async (id: string) => {
+    try {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user) {
+        alert("Please sign in before removing an emergency contact.");
+        return;
+      }
+
+      const { error } = await supabase
+        .from("emergency_contacts")
+        .delete()
+        .eq("id", id)
+        .eq("user_id", user.id);
+
+      if (error) {
+        console.error("Unable to remove emergency contact:", error);
+        alert("Unable to remove the emergency contact.");
+        return;
+      }
+
+      setFamilyMembers((current) =>
+        current.filter((member) => member.id !== id)
+      );
+    } catch (error) {
+      console.error("Unable to remove emergency contact:", error);
+      alert("Unable to remove the emergency contact.");
+    }
   };
 
   return (
@@ -126,13 +217,11 @@ export default function FamilyCard() {
             </div>
 
             <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-cyan-400/10">
-
               <Users
                 size={22}
                 strokeWidth={1.8}
                 className="text-cyan-300"
               />
-
             </div>
 
           </div>
@@ -175,13 +264,11 @@ export default function FamilyCard() {
               <div className="flex min-w-0 items-center gap-3">
 
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-400/10">
-
                   <ShieldCheck
                     size={19}
                     strokeWidth={1.8}
                     className="text-emerald-300"
                   />
-
                 </div>
 
                 <div className="min-w-0">
@@ -234,24 +321,30 @@ export default function FamilyCard() {
                 className="overflow-hidden rounded-2xl border border-emerald-300/20 bg-emerald-400/[0.04]"
               >
                 <div className="p-4">
+
                   <div className="flex items-center gap-3">
+
                     <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-400/10">
                       <ShieldCheck size={19} className="text-emerald-300" />
                     </div>
 
                     <div className="min-w-0 flex-1">
+
                       <p className="text-[11px] font-semibold text-white">
                         Primary Contact Connected
                       </p>
+
                       <p className="mt-1 text-[9px] leading-4 text-white/55">
                         Your primary safety contact is connected and ready to
                         support your safety journey.
                       </p>
+
                     </div>
 
                     <span className="shrink-0 rounded-full border border-emerald-300/20 bg-emerald-400/10 px-2 py-1 text-[8px] font-semibold text-emerald-300">
                       CONNECTED
                     </span>
+
                   </div>
 
                   <button
@@ -264,6 +357,7 @@ export default function FamilyCard() {
                   >
                     CLOSE
                   </button>
+
                 </div>
               </motion.div>
             )}
@@ -308,8 +402,8 @@ export default function FamilyCard() {
                       {member.name}
                     </p>
 
-                    <p className="mt-1 truncate text-[9px] font-medium text-white/45">
-                      {member.relation} • {member.phone}
+                    <p className="mt-1 truncate text-[9px] font-medium text-white">
+                      {member.relation} - {member.phone}
                     </p>
 
                   </div>
@@ -340,7 +434,7 @@ export default function FamilyCard() {
 
             {/* Empty Family Member State */}
 
-            {familyMembers.length === 0 && (
+            {!loading && familyMembers.length === 0 && (
 
               <div
                 className="
@@ -403,11 +497,8 @@ export default function FamilyCard() {
             >
 
               <div className="flex items-center justify-center gap-2">
-
                 <Plus size={17} />
-
                 Add Family Member
-
               </div>
 
             </PremiumButton>
@@ -493,9 +584,7 @@ export default function FamilyCard() {
                   text-white/70
                 "
               >
-
                 <X size={17} />
-
               </button>
 
             </div>
@@ -577,6 +666,7 @@ export default function FamilyCard() {
               <button
                 type="button"
                 onClick={closeAddMember}
+                disabled={saving}
                 className="
                   flex-1
                   rounded-xl
@@ -596,6 +686,7 @@ export default function FamilyCard() {
               <button
                 type="button"
                 onClick={handleAddMember}
+                disabled={saving}
                 className="
                   flex-1
                   rounded-xl
@@ -607,9 +698,10 @@ export default function FamilyCard() {
                   text-[10px]
                   font-semibold
                   text-cyan-200
+                  disabled:opacity-50
                 "
               >
-                Add Member
+                {saving ? "Saving..." : "Add Member"}
               </button>
 
             </div>

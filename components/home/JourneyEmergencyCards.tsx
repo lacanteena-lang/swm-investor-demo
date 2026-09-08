@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
 
@@ -868,9 +868,9 @@ export default function SafetyProfile() {
                               : `Emergency Contact ${index + 1}`}
                         </p>
 
-                        <p className="mt-1 truncate text-[10px] text-white/45">
+                        <p className="mt-1 truncate text-[10px] font-semibold text-white">
                           {isAdded
-                            ? `${contact.relationship} • ${contact.phone}`
+                            ? `${contact.relationship} - ${contact.phone}`
                             : "Not added yet"}
                         </p>
 

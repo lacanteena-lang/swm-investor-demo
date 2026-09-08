@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
@@ -445,7 +445,7 @@ export default function EvidenceVaultCard() {
                   </span>
                 </div>
 
-                <span className="shrink-0 text-[10px] font-medium text-white/45">
+                <span className="shrink-0 text-[10px] font-medium text-[#FF3131]">
                   {value}
                 </span>
               </motion.button>
@@ -492,7 +492,7 @@ export default function EvidenceVaultCard() {
                     </p>
 
                     {event.description && (
-                      <p className="mt-1 text-[10px] leading-5 text-white/45">
+                      <p className="mt-1 text-[10px] leading-5 text-[#FF3131]">
                         {event.description}
                       </p>
                     )}
@@ -554,7 +554,7 @@ export default function EvidenceVaultCard() {
                 Protected Evidence
               </p>
 
-              <p className="mt-1 text-[10px] leading-5 text-white/45">
+              <p className="mt-1 text-[10px] leading-5 text-[#FF3131]">
                 Emergency evidence is encrypted and protected from tampering.
               </p>
             </div>
@@ -576,3 +576,5 @@ export default function EvidenceVaultCard() {
     </GlassCard>
   );
 }
+
+

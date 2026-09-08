@@ -1,0 +1,59 @@
+import { NextRequest, NextResponse } from "next/server";
+
+export async function POST(request: NextRequest) {
+  try {
+    const body = await request.json();
+
+    const {
+      incidentId,
+      contactCount,
+      status,
+    } = body;
+
+    if (!incidentId) {
+      return NextResponse.json(
+        { error: "Incident ID is required." },
+        { status: 400 }
+      );
+    }
+
+    if (typeof contactCount !== "number") {
+      return NextResponse.json(
+        { error: "Contact count is required." },
+        { status: 400 }
+      );
+    }
+
+    if (!status) {
+      return NextResponse.json(
+        { error: "Notification status is required." },
+        { status: 400 }
+      );
+    }
+
+    /*
+     * Provider-independent notification boundary.
+     *
+     * No SMS or WhatsApp is sent here yet.
+     * A real notification provider will be connected later.
+     */
+
+    console.log(
+      `Notification prepared for incident ${incidentId}: ${contactCount} contact(s), status=${status}`
+    );
+
+    return NextResponse.json({
+      success: true,
+      incidentId,
+      contactCount,
+      status,
+    });
+  } catch (error) {
+    console.error("Notification API error:", error);
+
+    return NextResponse.json(
+      { error: "Unable to prepare notification." },
+      { status: 500 }
+    );
+  }
+}

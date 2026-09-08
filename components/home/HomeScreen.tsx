@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useRouter } from "next/navigation";
 
@@ -21,7 +21,7 @@ export default function HomeScreen({
       activeTab={activeTab}
       setActiveTab={setActiveTab}
     >
-      <div className="relative h-full">
+      <div className="relative h-full overflow-y-auto overflow-x-hidden">
         {/* BACK TO ONBOARDING */}
         <button
           type="button"
@@ -29,12 +29,9 @@ export default function HomeScreen({
           onClick={() => router.push("/onboarding")}
           className="
             absolute
-            left-3
-            top-3
-            z-[80]
+            left-1 top-1 z-[80]
             flex
-            min-w-[82px]
-            flex-col
+            w-[112px] flex-col
             items-center
             justify-center
             rounded-2xl
@@ -54,11 +51,11 @@ export default function HomeScreen({
             active:scale-95
           "
         >
-          <span className="text-[20px] font-light leading-5 text-cyan-200 drop-shadow-[0_0_8px_rgba(34,211,238,0.9)]">
-            ←
+          <span className="text-[20px] font-bold leading-5 text-white drop-shadow-[0_0_8px_rgba(34,211,238,0.9)]">
+            &larr;
           </span>
 
-          <span className="mt-0.5 whitespace-nowrap text-[7px] font-black uppercase tracking-[0.12em] text-cyan-300 drop-shadow-[0_0_7px_rgba(34,211,238,0.8)]">
+          <span className="mt-0.5 whitespace-nowrap text-[9px] font-bold uppercase tracking-[0.02em] text-white drop-shadow-[0_0_7px_rgba(34,211,238,0.8)]">
             BACK TO ONBOARDING
           </span>
         </button>
@@ -70,3 +67,11 @@ export default function HomeScreen({
     </ScreenLayout>
   );
 }
+
+
+
+
+
+
+
+

@@ -1,0 +1,58 @@
+"use client";
+
+import Image from "next/image";
+
+export default function HeroCard() {
+  return (
+    <div className="relative">
+      {/* PREMIUM BLUE GLOW */}
+      <div className="pointer-events-none absolute inset-0">
+        <div className="absolute left-1/2 top-[-80px] h-[320px] w-[320px] -translate-x-1/2 rounded-full bg-cyan-400/15 blur-[95px]" />
+      </div>
+
+      <div className="relative flex flex-col items-center">
+
+        {/* SWM LOGO
+            The original artwork already contains:
+            STAY WITH ME
+            YOU ARE NEVER ALONE
+        */}
+        <div className="relative mt-0 h-[280px] w-[280px] shrink-0">
+          <Image
+            src="/images/swm-3logo.png"
+            alt="SWM - Stay With Me"
+            fill
+            priority
+            sizes="280px"
+            className="object-contain"
+          />
+        </div>
+
+        {/* PERSONAL SAFETY */}
+        <p className="mt-1 text-[11px] font-semibold uppercase tracking-[0.34em] text-cyan-300">
+          PERSONAL SAFETY
+        </p>
+
+        {/* MAIN HEADING */}
+        <h1 className="mt-1 text-center text-[24px] font-bold text-white">
+          You are Protected
+        </h1>
+
+        {/* DESCRIPTION */}
+        <p className="mt-1 max-w-[275px] text-center text-[13px] leading-5 text-[#D5DDEC]">
+          AI-powered protection backed by your
+          <br />
+          Personal Safety Concierge.
+        </p>
+
+        {/* LIVE PROTECTION */}
+        <div className="mt-3 rounded-full border border-emerald-400/20 bg-emerald-500/10 px-4 py-2">
+          <span className="text-[10px] font-semibold tracking-wide text-emerald-300">
+            LIVE PROTECTION ACTIVE
+          </span>
+        </div>
+
+      </div>
+    </div>
+  );
+}

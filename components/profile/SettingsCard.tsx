@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import {
@@ -129,7 +129,7 @@ export default function SettingsCard() {
                 <ChevronRight
                   size={18}
                   strokeWidth={1.8}
-                  className="shrink-0 text-white/35"
+                  className="shrink-0 text-[#FF3131] drop-shadow-[0_0_7px_rgba(255,49,49,0.95)]"
                 />
 
               </button>
