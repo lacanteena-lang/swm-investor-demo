@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const apiKey = process.env.GEOAPIFY_API_KEY;
+    const apiKey = process.env.NEXT_PUBLIC_GEOAPIFY_API_KEY;
 
     if (!apiKey) {
       return NextResponse.json(
@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
     }
 
     const url = new URL(
-      "https://api.geoapify.com/v1/geocode/search"
+      "https://api.geoapify.com/v1/geocode/autocomplete"
     );
 
     url.searchParams.set("text", query);
@@ -73,3 +73,4 @@ return NextResponse.json({ results });
     );
   }
 }
+

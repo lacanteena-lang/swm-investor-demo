@@ -1,12 +1,13 @@
-﻿"use client";
+"use client";
 
+import { NavigationEngine } from "./navigation/NavigationEngine";
 import { motion } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 import * as maplibregl from "maplibre-gl";
 
 maplibregl.setWorkerUrl("/maplibre/maplibre-gl-worker.mjs");
 
-import { Activity, ShieldCheck, Signal, X, Square, Play, MapPin, LocateFixed, Plus, Minus } from "lucide-react";
+import { Activity, ShieldCheck, Signal, X, Square, Play, MapPin, LocateFixed, Navigation, Plus, Minus } from "lucide-react";
 import GlassCard from "../ui/GlassCard";
 import { createClient } from "@supabase/supabase-js";
 
@@ -36,16 +37,33 @@ const JOURNEY_STORAGE_KEY = "swm_active_journey";
 const JOURNEY_SESSION_KEY = "swm_journey_session_id";
 
 export default function JourneyMap({ setActiveTab }: JourneyMapProps) {
+  const navigationEngineRef = useRef<NavigationEngine | null>(null);
+  if (!navigationEngineRef.current) {
+    navigationEngineRef.current = new NavigationEngine();
+  }
+  const [navigationEngineState, setNavigationEngineState] = useState(() =>
+    navigationEngineRef.current?.getState() ?? null
+  );
+
+
   const [showLiveStatus, setShowLiveStatus] = useState(false);
   const [showLocationStatus, setShowLocationStatus] = useState(false);
   const [showSafetyTip, setShowSafetyTip] = useState(false);
   const [mapZoom, setMapZoom] = useState(1);
   const [mapReady, setMapReady] = useState(false);
   const [mapLoaded, setMapLoaded] = useState(false);
-  const mapContainerRef = useRef<HTMLDivElement | null>(null);
+  const [routeCoordinates, setRouteCoordinates] = useState<[number, number][]>([]);
+const [navigationInstructions, setNavigationInstructions] = useState<Array<{
+  text: string;
+  type: string;
+  location?: [number, number];
+}>>([]);
+const [currentInstructionIndex, setCurrentInstructionIndex] = useState(0);
   const mapInstanceRef = useRef<maplibregl.Map | null>(null);
   const userMarkerRef = useRef<maplibregl.Marker | null>(null);
   const destinationMarkerRef = useRef<maplibregl.Marker | null>(null);
+  const lastRerouteLocationRef = useRef<{ latitude: number; longitude: number } | null>(null);
+  const hasFittedRouteRef = useRef(false);
   const [isJourneyActive, setIsJourneyActive] = useState(false);
   const [showEndJourneyConfirm, setShowEndJourneyConfirm] = useState(false);
 const [showDestinationSelector, setShowDestinationSelector] = useState(false);
@@ -66,37 +84,6 @@ const [destinationLocation, setDestinationLocation] = useState<{
 } | null>(null);
 const [isEnteringSpecificDestination, setIsEnteringSpecificDestination] = useState(false);
 const [isGeocodingDestination, setIsGeocodingDestination] = useState(false);
-useEffect(() => {
-  if (!isEnteringSpecificDestination) return;
-
-  const query = specificDestination.trim();
-
-  if (query.length < 3) {
-    setDestinationSuggestions([]);
-    return;
-  }
-
-  const timer = setTimeout(async () => {
-    try {
-      const response = await fetch(
-        `/api/geocode?q=${encodeURIComponent(query)}`
-      );
-
-      const data = await response.json();
-
-      if (response.ok && Array.isArray(data.results)) {
-        setDestinationSuggestions(data.results);
-      } else {
-        setDestinationSuggestions([]);
-      }
-    } catch {
-      setDestinationSuggestions([]);
-    }
-  }, 400);
-
-
-  return () => clearTimeout(timer);
-}, [specificDestination, isEnteringSpecificDestination]);
   const [journeyStartedAt, setJourneyStartedAt] = useState<number>(() => Date.now());
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [journeyStateLoaded, setJourneyStateLoaded] = useState(false);
@@ -118,6 +105,305 @@ useEffect(() => {
   const [supabaseSyncStatus, setSupabaseSyncStatus] = useState<
     "idle" | "syncing" | "synced" | "error"
   >("idle");
+  const mapContainerRef = useRef<HTMLDivElement | null>(null);
+  const spokenNavigationRef = useRef<Set<string>>(new Set());
+  const lastSpokenInstructionRef = useRef<string | null>(null);
+
+
+
+  // ----------------------------------------------------------
+  // SWM SCREEN WAKE LOCK
+  // Keeps the device screen awake during an active Journey.
+  // ----------------------------------------------------------
+  useEffect(() => {
+    let wakeLock: WakeLockSentinel | null = null;
+
+    const requestWakeLock = async () => {
+      if (!isJourneyActive) return;
+      if (!("wakeLock" in navigator)) return;
+
+      try {
+        wakeLock = await navigator.wakeLock.request("screen");
+
+        wakeLock.addEventListener("release", () => {
+          wakeLock = null;
+        });
+      } catch {
+        // Wake Lock may be unavailable or blocked by the browser.
+      }
+    };
+
+    void requestWakeLock();
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        void requestWakeLock();
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+
+      if (wakeLock) {
+        void wakeLock.release().catch(() => {});
+        wakeLock = null;
+      }
+    };
+  }, [isJourneyActive]);
+  // ----------------------------------------------------------
+  // ----------------------------------------------------------
+  // SWM VOICE NAVIGATION
+  // Announces the first instruction immediately and upcoming
+  // turns using the live GPS position and Geoapify instructions.
+  // ----------------------------------------------------------
+  useEffect(() => {
+    if (
+      !isJourneyActive ||
+      !locationTracking ||
+      !userLocation ||
+      navigationInstructions.length === 0 ||
+      !("speechSynthesis" in window)
+    ) {
+      return;
+    }
+
+    const instruction = navigationInstructions[currentInstructionIndex];
+    if (!instruction?.location) return;
+
+    const instructionLocation = {
+      latitude: instruction.location[1],
+      longitude: instruction.location[0],
+    };
+
+    const distanceKm = calculateDistanceKm(userLocation, instructionLocation);
+    const distanceM = distanceKm * 1000;
+
+    // Speak the first navigation instruction immediately.
+    if (currentInstructionIndex === 0) {
+      const instructionKey = "0-start";
+
+      if (!spokenNavigationRef.current.has(instructionKey)) {
+        spokenNavigationRef.current.add(instructionKey);
+        lastSpokenInstructionRef.current = instructionKey;
+
+        window.speechSynthesis.cancel();
+
+        const utterance = new SpeechSynthesisUtterance(instruction.text);
+        utterance.lang = "en-IN";
+        utterance.rate = 0.95;
+        utterance.pitch = 1;
+        utterance.volume = 1;
+
+        window.speechSynthesis.speak(utterance);
+      }
+
+      return;
+    }
+
+    // Speak subsequent turns at approximately 500 m and 100 m.
+    let threshold: number | null = null;
+
+    if (distanceM <= 500 && distanceM > 100) {
+      threshold = 500;
+    } else if (distanceM <= 100 && distanceM > 35) {
+      threshold = 100;
+    }
+
+    if (threshold === null) return;
+
+    const instructionKey = `${currentInstructionIndex}-${threshold}`;
+
+    if (spokenNavigationRef.current.has(instructionKey)) return;
+
+    spokenNavigationRef.current.add(instructionKey);
+    lastSpokenInstructionRef.current = instructionKey;
+
+    const spokenDistance =
+      threshold === 500
+        ? "500 metres"
+        : `${Math.max(50, Math.round(distanceM / 10) * 10)} metres`;
+
+    const text = `In ${spokenDistance}, ${instruction.text}`;
+
+    window.speechSynthesis.cancel();
+
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = "en-IN";
+    utterance.rate = 0.95;
+    utterance.pitch = 1;
+    utterance.volume = 1;
+
+    window.speechSynthesis.speak(utterance);
+  }, [
+    isJourneyActive,
+    locationTracking,
+    userLocation,
+    navigationInstructions,
+    currentInstructionIndex,
+  ]);
+  useEffect(() => {
+    const map = mapInstanceRef.current;
+    if (!map || !mapLoaded || routeCoordinates.length < 2) return;
+
+    const source = map.getSource("swm-route") as maplibregl.GeoJSONSource | undefined;
+    if (!source) return;
+
+    source.setData({
+      type: "Feature",
+      properties: {},
+      geometry: {
+        type: "LineString",
+        coordinates: routeCoordinates,
+      },
+    });
+
+    // Fit the complete route only when a new route is first displayed.
+    // During an active journey the live-follow effect below keeps the user
+    // centered instead of repeatedly zooming back to the whole route.
+    if (!hasFittedRouteRef.current) {
+      const bounds = new maplibregl.LngLatBounds();
+      routeCoordinates.forEach((coordinate) => bounds.extend(coordinate));
+
+      map.fitBounds(bounds, {
+        padding: { top: 70, bottom: 70, left: 45, right: 45 },
+        maxZoom: 15,
+        duration: 900,
+      });
+      hasFittedRouteRef.current = true;
+    }
+  }, [routeCoordinates, mapLoaded]);
+
+  useEffect(() => {
+    if (!mapLoaded || !userLocation || !destinationLocation) {
+      setRouteCoordinates([]);
+      hasFittedRouteRef.current = false;
+      lastRerouteLocationRef.current = null;
+      return;
+    }
+
+    const previous = lastRerouteLocationRef.current;
+    const movedSinceLastRoute = previous
+      ? (() => {
+          const earthRadiusKm = 6371;
+          const dLat = ((userLocation.latitude - previous.latitude) * Math.PI) / 180;
+          const dLon = ((userLocation.longitude - previous.longitude) * Math.PI) / 180;
+          const lat1 = (previous.latitude * Math.PI) / 180;
+          const lat2 = (userLocation.latitude * Math.PI) / 180;
+          const a =
+            Math.sin(dLat / 2) ** 2 +
+            Math.sin(dLon / 2) ** 2 * Math.cos(lat1) * Math.cos(lat2);
+          return earthRadiusKm * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        })()
+      : Number.POSITIVE_INFINITY;
+
+    // Do not hit the routing API for every GPS tick. Keep the current road
+    // route visually continuous and request a fresh route only after the
+    // user has moved a meaningful distance (or when there is no route yet).
+    if (routeCoordinates.length >= 2 && movedSinceLastRoute < 0.15) return;
+
+    const fetchRoute = async () => {
+      try {
+        const response = await fetch(
+          `/api/route?start=${userLocation.longitude},${userLocation.latitude}&end=${destinationLocation.longitude},${destinationLocation.latitude}`
+        );
+
+        if (!response.ok) {
+          console.error("SWM route request failed:", response.status);
+          return;
+        }
+
+        const data = await response.json();
+
+        const instructions = Array.isArray(data.instructions)
+          ? (data.instructions as Array<{
+              text: string;
+              type: string;
+              location?: [number, number];
+            }>)
+          : [];
+
+        setNavigationInstructions(instructions);
+        if (Array.isArray(data.maneuvers)) {
+          navigationEngineRef.current?.setManeuvers(data.maneuvers);
+        }
+
+        setCurrentInstructionIndex(0);
+        const coordinates = Array.isArray(data.coordinates)
+          ? (data.coordinates as [number, number][])
+          : [];
+
+        if (coordinates.length >= 2) {
+          lastRerouteLocationRef.current = {
+            latitude: userLocation.latitude,
+            longitude: userLocation.longitude,
+          };
+          setRouteCoordinates(coordinates);
+          navigationEngineRef.current?.setRoute(coordinates);
+        } else {
+          console.warn("SWM route returned no usable coordinates.");
+        }
+      } catch (error) {
+        console.error("SWM route loading failed:", error);
+      }
+    };
+
+    void fetchRoute();
+  }, [mapLoaded, userLocation, destinationLocation, routeCoordinates.length]);
+
+
+  useEffect(() => {
+    if (!isEnteringSpecificDestination) {
+      setDestinationSuggestions([]);
+      return;
+    }
+
+    const query = specificDestination.trim();
+
+    if (query.length < 3) {
+      setDestinationSuggestions([]);
+      return;
+    }
+
+    const timer = setTimeout(async () => {
+      try {
+        const response = await fetch(
+          `/api/geocode?q=${encodeURIComponent(query)}`
+        );
+
+        const data = await response.json();
+
+        const instructions = Array.isArray(data.instructions)
+          ? (data.instructions as Array<{
+              text: string;
+              type: string;
+              location?: [number, number];
+            }>)
+          : [];
+
+        setNavigationInstructions(instructions);
+        setCurrentInstructionIndex(0);
+
+        if (!response.ok) {
+          console.error("SWM autocomplete failed:", data);
+          setDestinationSuggestions([]);
+          return;
+        }
+
+        if (Array.isArray(data.results)) {
+          setDestinationSuggestions(data.results);
+        } else {
+          setDestinationSuggestions([]);
+        }
+      } catch (error) {
+        console.error("SWM autocomplete error:", error);
+        setDestinationSuggestions([]);
+      }
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [specificDestination, isEnteringSpecificDestination]);
 
   useEffect(() => {
     const map = mapInstanceRef.current;
@@ -132,6 +418,8 @@ useEffect(() => {
         el.style.background = "#22c55e";
         el.style.border = "3px solid white";
         el.style.boxShadow = "0 0 18px rgba(34,197,94,0.85)";
+        el.style.transition = "transform 650ms ease-out";
+        el.style.zIndex = "40";
         userMarkerRef.current = new maplibregl.Marker({ element: el })
           .setLngLat([userLocation.longitude, userLocation.latitude])
           .addTo(map);
@@ -155,6 +443,7 @@ useEffect(() => {
         el.style.background = "#ec4899";
         el.style.border = "3px solid white";
         el.style.boxShadow = "0 0 18px rgba(236,72,153,0.85)";
+        el.style.zIndex = "35";
         destinationMarkerRef.current = new maplibregl.Marker({ element: el })
           .setLngLat([
             destinationLocation.longitude,
@@ -171,12 +460,37 @@ useEffect(() => {
       destinationMarkerRef.current.remove();
       destinationMarkerRef.current = null;
     }
-  }, [userLocation, destinationLocation, mapReady, mapLoaded]);  useEffect(() => {
+  }, [userLocation, destinationLocation, mapReady, mapLoaded]);
+
+  useEffect(() => {
+    const map = mapInstanceRef.current;
+    if (!map || !mapLoaded || !userLocation || !isJourneyActive || !locationTracking) return;
+
+    // Google-Maps-style live following: the route remains in place while
+    // the current-location marker moves with each GPS update.
+    const currentZoom = map.getZoom();
+    const targetZoom = Math.max(15, Math.min(currentZoom, 17));
+
+    map.easeTo({
+      center: [userLocation.longitude, userLocation.latitude],
+      zoom: targetZoom,
+      duration: 650,
+      essential: true,
+    });
+  }, [userLocation, mapLoaded, isJourneyActive, locationTracking]);
+
+  useEffect(() => {
+    // A destination change starts a fresh route view.
+    hasFittedRouteRef.current = false;
+    lastRerouteLocationRef.current = null;
+  }, [destinationLocation?.latitude, destinationLocation?.longitude]);
+
+  useEffect(() => {
     if (!mapContainerRef.current) return;
 
     const map = new maplibregl.Map({
       container: mapContainerRef.current,
-      style: `https://maps.geoapify.com/v1/styles/osm-bright-smooth/style.json?apiKey=${process.env.NEXT_PUBLIC_GEOAPIFY_API_KEY}`,
+      style: "https://maps.geoapify.com/v1/styles/osm-bright-smooth/style.json?apiKey=" + process.env.NEXT_PUBLIC_GEOAPIFY_API_KEY,
       center: [77.1199, 28.5640],
       zoom: 12,
       attributionControl: false,
@@ -192,6 +506,44 @@ useEffect(() => {
     map.on("error", (event) => console.error("SWM MapLibre error:", event.error));
 
     map.addControl(new maplibregl.NavigationControl(), "top-right");
+
+    map.on("load", () => {
+      if (!map.getSource("swm-route")) {
+        map.addSource("swm-route", {
+          type: "geojson",
+          data: {
+            type: "Feature",
+            properties: {},
+            geometry: {
+              type: "LineString",
+              coordinates: [],
+            },
+          },
+        });
+
+        map.addLayer({
+          id: "swm-route-casing",
+          type: "line",
+          source: "swm-route",
+          paint: {
+            "line-color": "#020617",
+            "line-width": 9,
+            "line-opacity": 0.9,
+          },
+        });
+
+        map.addLayer({
+          id: "swm-route-line",
+          type: "line",
+          source: "swm-route",
+          paint: {
+            "line-color": "#38bdf8",
+            "line-width": 5,
+            "line-opacity": 1,
+          },
+        });
+      }
+    });
 
   
   return () => {
@@ -438,12 +790,43 @@ destinationLocation,
       
   };
 const totalJourneyDistanceKm = journeyStartLocation && destinationLocation ? calculateDistanceKm(journeyStartLocation, destinationLocation) : 0;
+
+  // Advance the visible navigation prompt as the user approaches each maneuver.
+  useEffect(() => {
+    if (!userLocation || navigationInstructions.length === 0) return;
+    if (currentInstructionIndex >= navigationInstructions.length - 1) return;
+
+    const currentInstruction = navigationInstructions[currentInstructionIndex];
+    if (!currentInstruction?.location) return;
+
+    const distanceToInstructionKm = calculateDistanceKm(
+      userLocation,
+      {
+        latitude: currentInstruction.location[1],
+        longitude: currentInstruction.location[0],
+      }
+    );
+
+    // Move to the next maneuver when we are approximately 60 metres away.
+    if (distanceToInstructionKm <= 0.06) {
+      setCurrentInstructionIndex((index) =>
+        Math.min(index + 1, navigationInstructions.length - 1)
+      );
+    }
+  }, [
+    userLocation,
+    navigationInstructions,
+    currentInstructionIndex,
+  ]);
+
   useEffect(() => {
     if (!journeyStateLoaded || !isJourneyActive || !locationTracking) return;
     if (!("geolocation" in navigator)) return;
 
     const watchId = navigator.geolocation.watchPosition(
       (position) => {
+        console.log("SWM APP GPS UPDATE", position.coords.latitude, position.coords.longitude);
+
         const nextLocation = {
           latitude: position.coords.latitude,
           longitude: position.coords.longitude,
@@ -451,6 +834,22 @@ const totalJourneyDistanceKm = journeyStartLocation && destinationLocation ? cal
         };
 
         setUserLocation(nextLocation);
+        const nextNavigationState = navigationEngineRef.current?.processGPSUpdate({
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
+          accuracy: position.coords.accuracy,
+          speed: position.coords.speed,
+          heading: position.coords.heading,
+          timestamp: position.timestamp,
+        });
+        if (nextNavigationState) {
+          setNavigationEngineState(nextNavigationState);
+        }
+        if (nextNavigationState?.routeProgress) {
+          console.log("SWM V2 ROUTE PROGRESS", nextNavigationState.routeProgress.distanceAlongRouteMeters);
+        }
+
+
 
         setJourneyStartLocation((existingStart) => {
           if (existingStart) return existingStart;
@@ -481,6 +880,9 @@ const totalJourneyDistanceKm = journeyStartLocation && destinationLocation ? cal
 
           return firstPoint;
         });
+        if (nextNavigationState) {
+          setNavigationEngineState(nextNavigationState);
+        }
 
         setJourneyStartLocation((startLocation) => {
           if (!startLocation) return startLocation;
@@ -534,6 +936,8 @@ const totalJourneyDistanceKm = journeyStartLocation && destinationLocation ? cal
 
     navigator.geolocation.getCurrentPosition(
       (position) => {
+        console.log("SWM INITIAL GPS", position.coords.latitude, position.coords.longitude);
+
         const nextLocation = {
           latitude: position.coords.latitude,
           longitude: position.coords.longitude,
@@ -725,6 +1129,16 @@ const totalJourneyDistanceKm = journeyStartLocation && destinationLocation ? cal
               type="button"
               onClick={() => {
                 const startedAt = Date.now();
+
+                // Initialise mobile browser speech from the user's Start Journey gesture.
+                if ("speechSynthesis" in window) {
+                  window.speechSynthesis.cancel();
+                  const speechUnlock = new SpeechSynthesisUtterance("Journey started.");
+                  speechUnlock.lang = "en-IN";
+                  speechUnlock.volume = 1;
+                  window.speechSynthesis.speak(speechUnlock);
+                }
+
                 const newId =
                   typeof crypto !== "undefined" && "randomUUID" in crypto
                     ? crypto.randomUUID()
@@ -769,6 +1183,23 @@ const totalJourneyDistanceKm = journeyStartLocation && destinationLocation ? cal
         {/* STEP 3 - MAP AREA ONLY */}
 
         <div ref={mapContainerRef} className={`relative mt-3 h-[430px] w-full min-w-0 overflow-hidden rounded-[18px] border border-slate-600/35 bg-[#020a17] ${mapLoaded ? "opacity-100" : "opacity-0"}`}>
+          {navigationInstructions.length > 0 && navigationInstructions[currentInstructionIndex] && (
+            <div className="absolute left-3 right-3 top-3 z-[100] rounded-2xl border border-white/10 bg-[#07172a]/95 px-4 py-3 shadow-[0_10px_30px_rgba(0,0,0,0.55)] backdrop-blur-md">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-pink-500/20 text-pink-300">
+                  <Navigation size={22} />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-[9px] font-bold uppercase tracking-[0.14em] text-pink-300">
+                    Next
+                  </p>
+                  <p className="mt-0.5 text-sm font-semibold leading-tight text-white">
+                    {navigationInstructions[currentInstructionIndex].text}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
           <div
             className="absolute inset-0 origin-center transition-transform duration-300 ease-out"
             style={{ transform: `scale(${mapZoom})` }}
@@ -1019,7 +1450,7 @@ const totalJourneyDistanceKm = journeyStartLocation && destinationLocation ? cal
     onClick={() => setShowDestinationSelector(false)}
   >
     <div
-      className="w-full max-w-[340px] rounded-[26px] border border-pink-400/20 bg-[#0d1420] p-5 shadow-[0_0_30px_rgba(236,72,153,0.16)]"
+      className="relative z-[300] w-full max-w-[340px] overflow-visible rounded-[26px] border border-pink-400/20 bg-[#0d1420] p-5 shadow-[0_0_30px_rgba(236,72,153,0.16)]"
       onClick={(event) => event.stopPropagation()}
     >
       <div className="flex items-center justify-between">
@@ -1046,15 +1477,54 @@ const totalJourneyDistanceKm = journeyStartLocation && destinationLocation ? cal
     <input
       type="text"
       value={specificDestination}
-      onChange={(event) =>
-        setSpecificDestination(event.target.value)
-      }
+      onChange={(event) => {
+        const value = event.target.value;
+        setSpecificDestination(value);
+
+        if (value.trim().length < 3) {
+          setDestinationSuggestions([]);
+          return;
+        }
+
+        fetch(`/api/geocode?q=${encodeURIComponent(value.trim())}`)
+          .then(async (response) => {
+            const data = await response.json();
+
+        const instructions = Array.isArray(data.instructions)
+          ? (data.instructions as Array<{
+              text: string;
+              type: string;
+              location?: [number, number];
+            }>)
+          : [];
+
+        setNavigationInstructions(instructions);
+        setCurrentInstructionIndex(0);
+
+            if (!response.ok || !Array.isArray(data.results)) {
+              setDestinationSuggestions([]);
+              return;
+            }
+
+            setDestinationSuggestions(data.results);
+          })
+          .catch((error) => {
+            console.error("SWM destination autocomplete error:", error);
+            setDestinationSuggestions([]);
+          });
+      }}
       placeholder="Enter your destination"
       className="w-full rounded-xl border border-pink-400/20 bg-[#07172a] px-4 py-3 text-[11px] text-white outline-none placeholder:text-white/35 focus:border-pink-400/50"
       autoFocus
     />
+    <p className="mt-2 text-[9px] text-cyan-300">
+      {specificDestination.trim().length >= 3
+        ? `Searching… ${destinationSuggestions.length} option(s)`
+        : "Type at least 3 characters"}
+    </p>
+
     {destinationSuggestions.length > 0 && (
-      <div className="mt-2 overflow-hidden rounded-xl border border-pink-400/15 bg-[#07172a]">
+      <div className="relative z-[300] mt-2 max-h-48 overflow-y-auto rounded-xl border border-pink-400/15 bg-[#07172a] shadow-[0_10px_30px_rgba(0,0,0,0.6)]">
         {destinationSuggestions.map((suggestion, index) => (
           <button
             key={`${suggestion.latitude}-${suggestion.longitude}-${index}`}
@@ -1070,7 +1540,7 @@ const totalJourneyDistanceKm = journeyStartLocation && destinationLocation ? cal
               setIsEnteringSpecificDestination(false);
               setShowDestinationSelector(false);
             }}
-            className="w-full border-b border-white/5 px-4 py-3 text-left text-[11px] text-white last:border-b-0"
+            className="relative z-[301] w-full border-b border-white/5 bg-[#07172a] px-4 py-3 text-left text-[11px] text-white last:border-b-0 hover:bg-white/[0.06] active:bg-white/[0.10]"
           >
             {suggestion.formatted}
           </button>
@@ -1542,6 +2012,40 @@ function MapButton({
     </button>
   );
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
